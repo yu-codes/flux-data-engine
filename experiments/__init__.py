@@ -1,8 +1,1 @@
-"""
-實驗腳本目錄
-
-每個實驗都有一個獨立的腳本，包含完整的參數配置、
-資料載入、模型訓練、評估、視覺化和結果儲存。
-
-命名規則：exp{NNN}_{method}_{description}.py
-"""
+"""Experiments package"""

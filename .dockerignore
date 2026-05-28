@@ -1,0 +1,9 @@
+# Docker
+node_modules/
+apps/frontend/node_modules/
+apps/frontend/dist/
+__pycache__/
+*.pyc
+.git/
+.venv/
+*.egg-info/

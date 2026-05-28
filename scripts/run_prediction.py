@@ -8,9 +8,8 @@ Config-Driven 預測執行腳本
   4. 儲存結果 + config 副本到 outputs/predictions/{timestamp}/
 
 Usage:
-  python scripts/run_prediction.py --config configs/experiments/combined_rrf.yaml
-  python scripts/run_prediction.py --config configs/experiments/rule_based.yaml
   python scripts/run_prediction.py --method combined --alpha 0.2 --k 5
+  python scripts/run_prediction.py --method rule_based --k 5
 """
 
 import sys
@@ -23,8 +22,8 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import yaml
-from src.pipeline.typhoon.predict import DisasterImpactPipeline
-from src.visualization.typhoon.plots import TyphoonVisualizer
+from src.stage09_inference_pipeline.typhoon.predict import DisasterImpactPipeline
+from src.stage08_downstream_analysis.typhoon.plots import TyphoonVisualizer
 
 
 def load_config(config_path: str) -> dict:
@@ -141,7 +140,7 @@ def main():
         "--config",
         type=str,
         default=None,
-        help="實驗 config YAML 路徑 (e.g. configs/experiments/combined_rrf.yaml)",
+        help="實驗 config YAML 路徑",
     )
     parser.add_argument(
         "--method",
@@ -153,7 +152,7 @@ def main():
     parser.add_argument("--alpha", type=float, default=0.2)
     parser.add_argument("--k", type=int, default=5)
     parser.add_argument("--typhoon-id", type=str, default=None)
-    parser.add_argument("--processed-dir", type=str, default="data/processed")
+    parser.add_argument("--processed-dir", type=str, default="data/typhoon/preprocessed")
     parser.add_argument("--output-dir", type=str, default="outputs/predictions")
     args = parser.parse_args()
 

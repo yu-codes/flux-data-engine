@@ -1,0 +1,86 @@
+{
+  "timestamp": "20260526_131041",
+  "experiment": "exp001_combined_rrf",
+  "config_source": "experiments/typhoon/all_cases/exp001_combined_rrf/run.py",
+  "method": "combined",
+  "hazard": "typhoon",
+  "parameters": {
+    "alpha": 0.13,
+    "rule_weight": 0.25,
+    "k": 5,
+    "impact_radius_km": 500.0,
+    "pool_size_factor": 10,
+    "rrf_k": 60,
+    "dtw_weights": [
+      1.0,
+      1.0,
+      1.0,
+      0.5
+    ],
+    "sakoe_chiba_ratio": 0.3
+  },
+  "results": {
+    "accuracy": 0.7273,
+    "total": 198,
+    "correct": 144,
+    "per_category": {
+      "3": {
+        "total": 30,
+        "correct": 18,
+        "accuracy": 0.6
+      },
+      "1": {
+        "total": 23,
+        "correct": 19,
+        "accuracy": 0.8260869565217391
+      },
+      "5": {
+        "total": 30,
+        "correct": 29,
+        "accuracy": 0.9666666666666667
+      },
+      "8": {
+        "total": 6,
+        "correct": 2,
+        "accuracy": 0.3333333333333333
+      },
+      "6": {
+        "total": 30,
+        "correct": 23,
+        "accuracy": 0.7666666666666667
+      },
+      "9": {
+        "total": 18,
+        "correct": 4,
+        "accuracy": 0.2222222222222222
+      },
+      "2": {
+        "total": 29,
+        "correct": 26,
+        "accuracy": 0.896551724137931
+      },
+      "4": {
+        "total": 21,
+        "correct": 16,
+        "accuracy": 0.7619047619047619
+      },
+      "7": {
+        "total": 11,
+        "correct": 7,
+        "accuracy": 0.6363636363636364
+      }
+    }
+  },
+  "rainfall": {
+    "overall_mae": {
+      "臺南": 90.42032801418438,
+      "高雄": 117.19685283687944
+    },
+    "overall_rmse": {
+      "臺南": 122.5338087989337,
+      "高雄": 147.99432599375072
+    },
+    "count": 198,
+    "total_with_data": 188
+  }
+}

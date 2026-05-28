@@ -1,0 +1,343 @@
+"""颱風預測相關端點"""
+
+import json
+from pathlib import Path
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+from apps.backend.state import app_state, SUPPORTED_METHODS
+from src.stage04_feature_engineering.typhoon.extractor import TyphoonFeatureExtractor
+from src.stage05_model_training.typhoon.similarity.rule_based import (
+    classify_typhoon_by_rules,
+)
+from src.stage05_model_training.typhoon.similarity.knn import KNNSimilarity
+from src.stage05_model_training.typhoon.mapping import (
+    ImpactMapper,
+    TRACK_CATEGORY_DESCRIPTION,
+)
+
+router = APIRouter(prefix="/api/typhoon", tags=["typhoon"])
+
+BASE_DIR = Path(__file__).parent.parent.parent.parent
+EXPERIMENTS_DIR = BASE_DIR / "experiments" / "typhoon"
+ALL_CASES_DIR = EXPERIMENTS_DIR / "all_cases"
+SINGLE_CASE_DIR = EXPERIMENTS_DIR / "single_case"
+
+
+# === Schemas ===
+class TrackPoint(BaseModel):
+    latitude: float
+    longitude: float
+    wind_kt: float | None = None
+    pressure_mb: float | None = None
+
+
+class PredictRequest(BaseModel):
+    track: list[TrackPoint] = Field(..., min_length=2)
+    method: str = "combined_optimized"
+    k: int = Field(default=5, ge=1, le=20)
+    alpha: float | None = None
+    rule_weight: float | None = None
+    rrf_k: int | None = None
+
+
+class SimilarTyphoon(BaseModel):
+    typhoon_id: str
+    name_zh: str
+    name_en: str
+    year: int
+    category: str
+    distance: float
+    score: float
+
+
+class RainfallStation(BaseModel):
+    mean: float
+    median: float
+    min: float
+    max: float
+
+
+class PredictResponse(BaseModel):
+    method: str
+    predicted_category: str | None
+    confidence: float
+    category_votes: dict[str, float]
+    similar_typhoons: list[SimilarTyphoon]
+    rainfall: dict[str, RainfallStation] | None = None
+    charts: list[str] = []
+
+
+class RunMeta(BaseModel):
+    run_id: str
+    experiment: str
+    run_path: str
+    meta: dict
+
+
+# === 預測端點 ===
+@router.post("/predict", response_model=PredictResponse)
+def predict(req: PredictRequest):
+    """執行颱風路徑類比預測"""
+    if req.method not in SUPPORTED_METHODS:
+        raise HTTPException(
+            400, f"Unsupported method: {req.method}. Use one of {SUPPORTED_METHODS}"
+        )
+
+    pipeline = app_state.pipelines.get(req.method)
+    if not pipeline:
+        raise HTTPException(503, f"Model '{req.method}' not loaded")
+
+    # 建立 track DataFrame
+    track_df = pd.DataFrame([p.model_dump() for p in req.track])
+    if "timestamp_utc" not in track_df.columns:
+        track_df["timestamp_utc"] = pd.date_range(
+            "2000-01-01", periods=len(track_df), freq="6h"
+        )
+
+    # 預測
+    if req.method == "rule_based":
+        rule_result = classify_typhoon_by_rules(track_df, landfall_location=None)
+        predicted_cat = rule_result["predicted_category"]
+        confidence = rule_result["confidence"]
+        category_votes = {predicted_cat: 1.0}
+
+        extractor = TyphoonFeatureExtractor()
+        query_features = extractor.extract(typhoon_id="query", track=track_df)
+        knn_sim = KNNSimilarity()
+        knn_sim.fit(pipeline.features)
+        sim_result = knn_sim.find_similar_by_vector(
+            query_features.to_feature_vector(), k=req.k
+        )
+    else:
+        extractor = TyphoonFeatureExtractor()
+        query_features = extractor.extract(typhoon_id="query", track=track_df)
+        query_vec = query_features.to_feature_vector()
+
+        sim_kwargs = {"k": req.k}
+        if req.method in ("combined", "combined_optimized"):
+            sim_kwargs["query_features"] = query_features
+        sim_result = pipeline.similarity.find_similar_by_vector(query_vec, **sim_kwargs)
+        pred = pipeline.model.predict(
+            query_id="query",
+            similar_ids=sim_result.similar_ids,
+            distances=sim_result.distances,
+        )
+        predicted_cat = pred.get("predicted_category")
+        confidence = pred.get("confidence", 0.0)
+        category_votes = pred.get("category_votes", {})
+
+    # 相似颱風
+    similar_info = []
+    for tid, dist, score in zip(
+        sim_result.similar_ids, sim_result.distances, sim_result.scores
+    ):
+        rec = pipeline.loader.get(tid)
+        similar_info.append(
+            SimilarTyphoon(
+                typhoon_id=tid,
+                name_zh=rec.name_zh,
+                name_en=rec.name_en,
+                year=rec.year,
+                category=rec.taiwan_track_category or "?",
+                distance=round(dist, 4),
+                score=round(score, 4),
+            )
+        )
+
+    # 降水分析
+    rainfall_result = None
+    if app_state.rainfall_analyzer:
+        try:
+            analog_rainfalls = []
+            for si in similar_info:
+                rec_rain = app_state.rainfall_analyzer.get_rainfall(si.typhoon_id)
+                if rec_rain:
+                    analog_rainfalls.append(
+                        {"臺南": rec_rain.tainan_mm, "高雄": rec_rain.kaohsiung_mm}
+                    )
+            if analog_rainfalls:
+                rainfall_result = {}
+                for station in ["臺南", "高雄"]:
+                    vals = [
+                        ar[station]
+                        for ar in analog_rainfalls
+                        if ar.get(station) is not None
+                    ]
+                    if vals:
+                        rainfall_result[station] = RainfallStation(
+                            mean=round(float(np.mean(vals)), 1),
+                            median=round(float(np.median(vals)), 1),
+                            min=round(float(min(vals)), 1),
+                            max=round(float(max(vals)), 1),
+                        )
+        except Exception:
+            pass
+
+    # 圖表生成
+    chart_urls = []
+    try:
+        from src.stage08_downstream_analysis.typhoon.plots import TyphoonVisualizer
+        from src.stage00_data_ingestion.typhoon.loader import TyphoonRecord
+
+        case_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        case_dir = SINGLE_CASE_DIR / case_timestamp
+        case_dir.mkdir(parents=True, exist_ok=True)
+
+        query_rec = TyphoonRecord(
+            typhoon_id="query",
+            year=2026,
+            name_zh="查詢颱風",
+            name_en="QUERY",
+            taiwan_track_category=str(predicted_cat or "?"),
+            birth_lon=None,
+            birth_lat=None,
+            max_sustained_wind_ms=None,
+            min_pressure=None,
+            max_intensity_class=None,
+            landfall_location=None,
+            movement_summary=None,
+            disaster_summary=None,
+            track=track_df,
+        )
+        similar_recs = []
+        for si in similar_info:
+            try:
+                similar_recs.append(pipeline.loader.get(si.typhoon_id))
+            except KeyError:
+                pass
+
+        viz = TyphoonVisualizer(str(case_dir))
+        if similar_recs:
+            viz.plot_prediction_example(
+                query_rec, similar_recs, str(predicted_cat or ""), confidence
+            )
+
+        for img in sorted(case_dir.glob("*.png")):
+            chart_urls.append(
+                f"/static/experiments/typhoon/single_case/{case_timestamp}/{img.name}"
+            )
+    except Exception:
+        pass
+
+    return PredictResponse(
+        method=req.method,
+        predicted_category=predicted_cat,
+        confidence=round(confidence, 4),
+        category_votes={k: round(v, 4) for k, v in category_votes.items()},
+        similar_typhoons=similar_info,
+        rainfall=rainfall_result,
+        charts=chart_urls,
+    )
+
+
+# === 實驗歷史端點 ===
+@router.get("/analysis")
+def get_analysis():
+    """取得分析圖表列表（軌跡 / 降水）"""
+    analysis_dir = EXPERIMENTS_DIR / "analysis"
+    track_images = []
+    rainfall_images = []
+    if analysis_dir.exists():
+        for img in sorted(analysis_dir.glob("*.png")):
+            entry = {
+                "name": img.stem,
+                "url": f"/static/experiments/typhoon/analysis/{img.name}",
+            }
+            if "rainfall" in img.stem:
+                rainfall_images.append(entry)
+            else:
+                track_images.append(entry)
+    return {"track_images": track_images, "rainfall_images": rainfall_images}
+
+
+@router.get("/categories")
+def list_categories():
+    """列出所有路徑分類及其描述"""
+    return {
+        "categories": [
+            {"id": cat, "description": desc}
+            for cat, desc in TRACK_CATEGORY_DESCRIPTION.items()
+        ]
+    }
+
+
+@router.get("/runs")
+def list_runs():
+    """列出所有批次預測實驗"""
+    runs = []
+    if not ALL_CASES_DIR.exists():
+        return runs
+
+    for exp_dir in sorted(ALL_CASES_DIR.iterdir()):
+        if not exp_dir.is_dir() or exp_dir.name.startswith(("_", ".")):
+            continue
+        pred_dir = exp_dir / "predictions"
+        if not pred_dir.exists() or not pred_dir.is_dir():
+            continue
+        meta = _load_run_meta(pred_dir)
+        run_path = f"all_cases/{exp_dir.name}/predictions"
+        runs.append(
+            RunMeta(
+                run_id=exp_dir.name,
+                experiment=exp_dir.name,
+                run_path=run_path,
+                meta=meta,
+            )
+        )
+
+    runs.sort(key=lambda r: r.run_id, reverse=True)
+    return runs
+
+
+@router.get("/runs/{run_id}")
+def get_run_detail(run_id: str):
+    """取得特定實驗的詳細結果"""
+    run_dir = ALL_CASES_DIR / run_id / "predictions"
+    if not run_dir.is_dir():
+        raise HTTPException(404, "Run not found")
+
+    meta = _load_run_meta(run_dir)
+
+    images = []
+    rainfall_images = []
+    for img in sorted(run_dir.glob("*.png")):
+        entry = {
+            "name": img.stem,
+            "url": f"/static/experiments/typhoon/all_cases/{run_id}/predictions/{img.name}",
+        }
+        if "rainfall" in img.stem:
+            rainfall_images.append(entry)
+        else:
+            images.append(entry)
+
+    rainfall_data = None
+    rainfall_path = run_dir / "rainfall_analysis.json"
+    if rainfall_path.exists():
+        with open(rainfall_path, "r", encoding="utf-8") as f:
+            rainfall_data = json.load(f)
+
+    return {
+        "run_id": run_id,
+        "meta": meta,
+        "images": images,
+        "rainfall_images": rainfall_images,
+        "rainfall_data": rainfall_data,
+    }
+
+
+# === 輔助函式 ===
+def _load_run_meta(run_dir: Path) -> dict:
+    meta_path = run_dir / "run_meta.json"
+    if meta_path.exists():
+        with open(meta_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    summary_path = run_dir / "evaluation_summary.json"
+    if summary_path.exists():
+        with open(summary_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"note": "No metadata found"}

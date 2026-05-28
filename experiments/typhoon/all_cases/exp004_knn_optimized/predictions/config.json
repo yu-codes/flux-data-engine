@@ -1,0 +1,40 @@
+{
+  "name": "exp004_knn_optimized",
+  "description": "KNN Optimized: 3 significant features weighted (min_distance=3.0, closest_lat=2.0, speed=2.5)",
+  "method": "knn_optimized",
+  "parameters": {
+    "k": 5,
+    "impact_radius_km": 500.0,
+    "feature_weights": [
+      3.0,
+      2.0,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      2.5,
+      0.5,
+      0.5
+    ]
+  },
+  "evaluation": {
+    "metrics": [
+      "category_accuracy",
+      "rainfall_analysis"
+    ],
+    "leave_one_out": true,
+    "categories": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9"
+    ]
+  }
+}

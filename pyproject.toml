@@ -1,7 +1,7 @@
 [project]
-name = "disaster-impact-engine"
-version = "2.1.0"
-description = "颱風類比災害預測系統 — 基於歷史相似度的影響導向預測"
+name = "flux-data-engine"
+version = "3.0.0"
+description = "Flux Data Engine — 多災害類比預測引擎，基於歷史相似度的影響導向預測系統"
 requires-python = ">=3.10"
 dependencies = [
     "pandas>=2.0",
@@ -11,5 +11,7 @@ dependencies = [
     "seaborn>=0.12",
     "dtaidistance>=2.3",
     "openpyxl>=3.1",
-    "flask>=3.0",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "pyyaml>=6.0",
 ]

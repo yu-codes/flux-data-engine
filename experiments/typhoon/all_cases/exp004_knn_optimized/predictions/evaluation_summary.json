@@ -1,0 +1,53 @@
+{
+  "method": "knn_optimized",
+  "accuracy": 0.6364,
+  "total": 198,
+  "correct": 126,
+  "per_category": {
+    "3": {
+      "total": 30,
+      "correct": 22,
+      "accuracy": 0.7333333333333333
+    },
+    "1": {
+      "total": 23,
+      "correct": 21,
+      "accuracy": 0.9130434782608695
+    },
+    "5": {
+      "total": 30,
+      "correct": 29,
+      "accuracy": 0.9666666666666667
+    },
+    "8": {
+      "total": 6,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "6": {
+      "total": 30,
+      "correct": 16,
+      "accuracy": 0.5333333333333333
+    },
+    "9": {
+      "total": 18,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "2": {
+      "total": 29,
+      "correct": 22,
+      "accuracy": 0.7586206896551724
+    },
+    "4": {
+      "total": 21,
+      "correct": 16,
+      "accuracy": 0.7619047619047619
+    },
+    "7": {
+      "total": 11,
+      "correct": 0,
+      "accuracy": 0.0
+    }
+  }
+}

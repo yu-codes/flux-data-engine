@@ -1,0 +1,26 @@
+description: 'Rule-Based v2: 雙層 Window + 向量方向 + 強化分類優先順序 + 資料驅動信心分數'
+evaluation:
+  categories:
+  - '1'
+  - '2'
+  - '3'
+  - '4'
+  - '5'
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  leave_one_out: true
+  metrics:
+  - category_accuracy
+  - rainfall_analysis
+method: rule_based
+name: exp005_rule_based_v2
+parameters:
+  context_radius_km: 400.0
+  core_radius_km: 200.0
+  impact_radius_km: 500.0
+  k: 5
+  weight_category: 0.3
+  weight_intensity: 0.1
+  weight_path: 0.6
