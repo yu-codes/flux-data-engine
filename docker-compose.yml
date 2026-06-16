@@ -7,6 +7,10 @@ services:
       - "8000:8000"
     environment:
       - PYTHONIOENCODING=utf-8
+    volumes:
+      - ./data:/app/data
+      - ./experiments:/app/experiments
+      - ./models:/app/models
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

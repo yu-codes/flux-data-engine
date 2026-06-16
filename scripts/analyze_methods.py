@@ -28,20 +28,22 @@ from scipy import stats
 ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
-from src.stage00_data_ingestion.typhoon.loader import DataLoader
-from src.stage04_feature_engineering.typhoon.extractor import (
+from data_pipiline.stage00_data_ingestion.typhoon.loader import DataLoader
+from data_pipiline.stage04_feature_engineering.typhoon.extractor import (
     TyphoonFeatureExtractor,
     TyphoonFeatures,
 )
-from src.stage05_model_training.typhoon.similarity.knn import KNNSimilarity
-from src.stage05_model_training.typhoon.similarity.dtw import DTWSimilarity
-from src.stage05_model_training.typhoon.similarity.combined import CombinedSimilarity
-from src.stage05_model_training.typhoon.similarity.rule_based import (
+from data_pipiline.stage05_model_training.typhoon.similarity.knn import KNNSimilarity
+from data_pipiline.stage05_model_training.typhoon.similarity.dtw import DTWSimilarity
+from data_pipiline.stage05_model_training.typhoon.similarity.combined import (
+    CombinedSimilarity,
+)
+from data_pipiline.stage05_model_training.typhoon.similarity.rule_based import (
     classify_typhoon_by_rules,
     RuleBasedSimilarity,
 )
-from src.stage05_model_training.typhoon.analog import AnalogModel
-from src.stage05_model_training.typhoon.mapping import ImpactMapper
+from data_pipiline.stage05_model_training.typhoon.analog import AnalogModel
+from data_pipiline.stage05_model_training.typhoon.mapping import ImpactMapper
 
 
 # === 中文字型 ===

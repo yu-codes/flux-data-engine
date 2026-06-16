@@ -11,8 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.stage01_data_cleaning.typhoon.cleaner import clean_and_save
-from src.stage03_data_preprocessing.typhoon.preprocessor import preprocess_and_save
+from data_pipiline.stage01_data_cleaning.typhoon.cleaner import clean_and_save
+from data_pipiline.stage03_data_preprocessing.typhoon.preprocessor import (
+    preprocess_and_save,
+)
 
 
 def main():

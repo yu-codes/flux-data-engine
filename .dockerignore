@@ -1,7 +1,7 @@
 # Docker
 node_modules/
-apps/frontend/node_modules/
-apps/frontend/dist/
+frontend/node_modules/
+frontend/dist/
 __pycache__/
 *.pyc
 .git/

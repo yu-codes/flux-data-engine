@@ -22,8 +22,10 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import yaml
-from src.stage09_inference_pipeline.typhoon.predict import DisasterImpactPipeline
-from src.stage08_downstream_analysis.typhoon.plots import TyphoonVisualizer
+from data_pipiline.stage09_inference_pipeline.typhoon.predict import (
+    DisasterImpactPipeline,
+)
+from data_pipiline.stage08_downstream_analysis.typhoon.plots import TyphoonVisualizer
 
 
 def load_config(config_path: str) -> dict:
@@ -152,7 +154,9 @@ def main():
     parser.add_argument("--alpha", type=float, default=0.2)
     parser.add_argument("--k", type=int, default=5)
     parser.add_argument("--typhoon-id", type=str, default=None)
-    parser.add_argument("--processed-dir", type=str, default="data/typhoon/preprocessed")
+    parser.add_argument(
+        "--processed-dir", type=str, default="data/typhoon/preprocessed"
+    )
     parser.add_argument("--output-dir", type=str, default="outputs/predictions")
     args = parser.parse_args()
 

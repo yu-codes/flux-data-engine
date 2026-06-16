@@ -7,11 +7,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.stage00_data_ingestion.typhoon.loader import DataLoader
-from src.stage04_feature_engineering.typhoon.extractor import TyphoonFeatureExtractor
-from src.stage02_exploratory_analysis.typhoon.eda import TyphoonEDA
-from src.stage08_downstream_analysis.typhoon.rainfall import RainfallAnalyzer
-from src.stage08_downstream_analysis.typhoon.plots import TyphoonVisualizer
+from data_pipiline.stage00_data_ingestion.typhoon.loader import DataLoader
+from data_pipiline.stage04_feature_engineering.typhoon.extractor import (
+    TyphoonFeatureExtractor,
+)
+from data_pipiline.stage02_exploratory_analysis.typhoon.eda import TyphoonEDA
+from data_pipiline.stage08_downstream_analysis.typhoon.rainfall import RainfallAnalyzer
+from data_pipiline.stage08_downstream_analysis.typhoon.plots import TyphoonVisualizer
 
 
 def main():

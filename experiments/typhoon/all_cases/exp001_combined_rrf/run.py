@@ -27,9 +27,11 @@ ROOT_DIR = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 import yaml
-from src.stage09_inference_pipeline.typhoon.predict import DisasterImpactPipeline
-from src.stage08_downstream_analysis.typhoon.plots import TyphoonVisualizer
-from src.stage08_downstream_analysis.typhoon.rainfall import RainfallAnalyzer
+from data_pipiline.stage09_inference_pipeline.typhoon.predict import (
+    DisasterImpactPipeline,
+)
+from data_pipiline.stage08_downstream_analysis.typhoon.plots import TyphoonVisualizer
+from data_pipiline.stage08_downstream_analysis.typhoon.rainfall import RainfallAnalyzer
 
 # === 實驗配置（完整記錄，供未來重現）===
 EXPERIMENT_CONFIG = {
