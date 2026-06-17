@@ -2,10 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(bash scripts/start.sh)",
-      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(curl -s http://localhost:38000/health)",
       "Bash(curl -s http://localhost:3001/ -o /dev/null -w \"frontend status: %{http_code}\\\\n\")",
-      "Bash(curl -s -X POST http://localhost:8000/api/typhoon/predict -H 'Content-Type: application/json' -d '{ *)",
-      "Bash(curl -s -o /dev/null -w \"static chart status: %{http_code}\\\\n\" \"http://localhost:8000/static/experiments/typhoon/single_case/20260616_090636/prediction_cat6_query.png\")",
+      "Bash(curl -s -X POST http://localhost:38000/api/typhoon/predict -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(curl -s -o /dev/null -w \"static chart status: %{http_code}\\\\n\" \"http://localhost:38000/static/experiments/typhoon/single_case/20260616_090636/prediction_cat6_query.png\")",
       "Bash(bash scripts/run_pipeline.sh scripts/build_dataset.py)"
     ]
   }

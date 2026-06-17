@@ -1,7 +1,7 @@
 """
 Flux Data Engine — FastAPI Backend
 
-啟動：uvicorn backend.main:app --host 0.0.0.0 --port 8000
+啟動：uvicorn backend.main:app --host 0.0.0.0 --port 38000
 """
 
 import sys
