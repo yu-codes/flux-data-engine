@@ -1,0 +1,3170 @@
+[
+  {
+    "typhoon_id": "195807",
+    "target_rainfall": {
+      "tn": 155.9,
+      "kh": 186.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 68.44000000000001,
+      "kh": 123.0
+    },
+    "loss_rmse": {
+      "tn": 82.62445158668226,
+      "kh": 139.21554510901433
+    }
+  },
+  {
+    "typhoon_id": "195813",
+    "target_rainfall": {
+      "tn": 33.4,
+      "kh": 35.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 15.88,
+      "kh": 17.78
+    },
+    "loss_rmse": {
+      "tn": 19.836632778775733,
+      "kh": 21.513484143671384
+    }
+  },
+  {
+    "typhoon_id": "195905",
+    "target_rainfall": {
+      "tn": 111.8,
+      "kh": 115.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 87.0,
+      "kh": 92.34
+    },
+    "loss_rmse": {
+      "tn": 87.9618326321138,
+      "kh": 93.31695451524337
+    }
+  },
+  {
+    "typhoon_id": "195908",
+    "target_rainfall": {
+      "tn": 15.0,
+      "kh": 48.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 53.36,
+      "kh": 29.579999999999995
+    },
+    "loss_rmse": {
+      "tn": 88.96950039198828,
+      "kh": 38.75613499821674
+    }
+  },
+  {
+    "typhoon_id": "195909",
+    "target_rainfall": {
+      "tn": 99.8,
+      "kh": 119.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 37.54,
+      "kh": 55.339999999999996
+    },
+    "loss_rmse": {
+      "tn": 42.159198284597394,
+      "kh": 58.394914162108336
+    }
+  },
+  {
+    "typhoon_id": "195911",
+    "target_rainfall": {
+      "tn": 17.2,
+      "kh": 12.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 54.9,
+      "kh": 68.3
+    },
+    "loss_rmse": {
+      "tn": 77.75429248601006,
+      "kh": 93.23515431423921
+    }
+  },
+  {
+    "typhoon_id": "195917",
+    "target_rainfall": {
+      "tn": 1.7,
+      "kh": 35.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 14.719999999999999,
+      "kh": 22.04
+    },
+    "loss_rmse": {
+      "tn": 23.61431769075702,
+      "kh": 24.492856101320644
+    }
+  },
+  {
+    "typhoon_id": "195921",
+    "target_rainfall": {
+      "tn": 26.7,
+      "kh": 32.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 42.08,
+      "kh": 63.42
+    },
+    "loss_rmse": {
+      "tn": 73.5091286848103,
+      "kh": 74.25675726827829
+    }
+  },
+  {
+    "typhoon_id": "196003",
+    "target_rainfall": {
+      "tn": 55.0,
+      "kh": 74.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 33.779999999999994,
+      "kh": 47.279999999999994
+    },
+    "loss_rmse": {
+      "tn": 38.13735701382569,
+      "kh": 49.294867887032616
+    }
+  },
+  {
+    "typhoon_id": "196008",
+    "target_rainfall": {
+      "tn": 222.6,
+      "kh": 98.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 93.88,
+      "kh": 97.56
+    },
+    "loss_rmse": {
+      "tn": 121.58942388217818,
+      "kh": 127.64612019172381
+    }
+  },
+  {
+    "typhoon_id": "196012",
+    "target_rainfall": {
+      "tn": 0.3,
+      "kh": 10.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 69.32000000000001,
+      "kh": 81.78
+    },
+    "loss_rmse": {
+      "tn": 98.40241866946157,
+      "kh": 154.3641085226744
+    }
+  },
+  {
+    "typhoon_id": "196104",
+    "target_rainfall": {
+      "tn": 7.9,
+      "kh": 10.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 33.22,
+      "kh": 78.94
+    },
+    "loss_rmse": {
+      "tn": 60.52733266880343,
+      "kh": 96.5415661774761
+    }
+  },
+  {
+    "typhoon_id": "196109",
+    "target_rainfall": {
+      "tn": 20.7,
+      "kh": 94.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 8.540000000000001,
+      "kh": 72.26
+    },
+    "loss_rmse": {
+      "tn": 11.233610283430702,
+      "kh": 74.04543199955012
+    }
+  },
+  {
+    "typhoon_id": "196114",
+    "target_rainfall": {
+      "tn": 132.4,
+      "kh": 409.4
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 86.4,
+      "kh": 245.76
+    },
+    "loss_rmse": {
+      "tn": 109.05185922303204,
+      "kh": 267.23829815353935
+    }
+  },
+  {
+    "typhoon_id": "196116",
+    "target_rainfall": {
+      "tn": 81.8,
+      "kh": 140.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 24.9,
+      "kh": 79.74
+    },
+    "loss_rmse": {
+      "tn": 30.269027073891884,
+      "kh": 93.30143621616979
+    }
+  },
+  {
+    "typhoon_id": "196120",
+    "target_rainfall": {
+      "tn": 30.5,
+      "kh": 13.9
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 89.04,
+      "kh": 27.139999999999997
+    },
+    "loss_rmse": {
+      "tn": 104.78517070654607,
+      "kh": 35.80723390601401
+    }
+  },
+  {
+    "typhoon_id": "196122",
+    "target_rainfall": {
+      "tn": 22.6,
+      "kh": 43.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 34.24,
+      "kh": 89.96000000000001
+    },
+    "loss_rmse": {
+      "tn": 43.068550010419436,
+      "kh": 121.92482930068019
+    }
+  },
+  {
+    "typhoon_id": "196205",
+    "target_rainfall": {
+      "tn": 316.2,
+      "kh": 664.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 172.14,
+      "kh": 446.82000000000005
+    },
+    "loss_rmse": {
+      "tn": 187.64537297785947,
+      "kh": 469.23639458166497
+    }
+  },
+  {
+    "typhoon_id": "196209",
+    "target_rainfall": {
+      "tn": 20.1,
+      "kh": 5.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 98.34,
+      "kh": 58.720000000000006
+    },
+    "loss_rmse": {
+      "tn": 127.77632801109914,
+      "kh": 87.72028271728267
+    }
+  },
+  {
+    "typhoon_id": "196215",
+    "target_rainfall": {
+      "tn": 10.9,
+      "kh": 15.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 3.66,
+      "kh": 14.319999999999999
+    },
+    "loss_rmse": {
+      "tn": 4.050432075717355,
+      "kh": 17.108243626977025
+    }
+  },
+  {
+    "typhoon_id": "196216",
+    "target_rainfall": {
+      "tn": 103.0,
+      "kh": 81.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 64.16,
+      "kh": 49.5
+    },
+    "loss_rmse": {
+      "tn": 80.87681991769954,
+      "kh": 52.57480385127461
+    }
+  },
+  {
+    "typhoon_id": "196219",
+    "target_rainfall": {
+      "tn": 4.6,
+      "kh": 15.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 3.6800000000000006,
+      "kh": 15.180000000000001
+    },
+    "loss_rmse": {
+      "tn": 4.834873317885382,
+      "kh": 24.868735392054013
+    }
+  },
+  {
+    "typhoon_id": "196314",
+    "target_rainfall": {
+      "tn": 38.2,
+      "kh": 38.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 34.86,
+      "kh": 32.0
+    },
+    "loss_rmse": {
+      "tn": 42.12308155868941,
+      "kh": 41.140928526225565
+    }
+  },
+  {
+    "typhoon_id": "196510",
+    "target_rainfall": {
+      "tn": 10.2,
+      "kh": 57.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 32.22,
+      "kh": 49.82
+    },
+    "loss_rmse": {
+      "tn": 59.38668200867935,
+      "kh": 57.533312089605964
+    }
+  },
+  {
+    "typhoon_id": "196514",
+    "target_rainfall": {
+      "tn": 90.1,
+      "kh": 122.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 47.34,
+      "kh": 18.220000000000002
+    },
+    "loss_rmse": {
+      "tn": 54.453337822396165,
+      "kh": 27.599456516388145
+    }
+  },
+  {
+    "typhoon_id": "196519",
+    "target_rainfall": {
+      "tn": 93.5,
+      "kh": 59.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 62.0,
+      "kh": 38.32
+    },
+    "loss_rmse": {
+      "tn": 76.60511732253923,
+      "kh": 40.324831059782504
+    }
+  },
+  {
+    "typhoon_id": "196603",
+    "target_rainfall": {
+      "tn": 221.2,
+      "kh": 126.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 128.44,
+      "kh": 72.84
+    },
+    "loss_rmse": {
+      "tn": 152.55084398324382,
+      "kh": 77.32670948643812
+    }
+  },
+  {
+    "typhoon_id": "196612",
+    "target_rainfall": {
+      "tn": 1.9,
+      "kh": 3.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 46.39999999999999,
+      "kh": 50.16
+    },
+    "loss_rmse": {
+      "tn": 58.66685606030035,
+      "kh": 63.00872955392769
+    }
+  },
+  {
+    "typhoon_id": "196617",
+    "target_rainfall": {
+      "tn": 0.7,
+      "kh": 3.9
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 17.82,
+      "kh": 24.9
+    },
+    "loss_rmse": {
+      "tn": 21.963924968001507,
+      "kh": 30.884785898561773
+    }
+  },
+  {
+    "typhoon_id": "196619",
+    "target_rainfall": {
+      "tn": 47.5,
+      "kh": 67.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 20.259999999999998,
+      "kh": 62.18000000000001
+    },
+    "loss_rmse": {
+      "tn": 27.195551106752735,
+      "kh": 63.67726438847699
+    }
+  },
+  {
+    "typhoon_id": "196708",
+    "target_rainfall": {
+      "tn": 107.5,
+      "kh": 32.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 47.12,
+      "kh": 33.54
+    },
+    "loss_rmse": {
+      "tn": 69.32540659815852,
+      "kh": 35.8023183606872
+    }
+  },
+  {
+    "typhoon_id": "196719",
+    "target_rainfall": {
+      "tn": 118.9,
+      "kh": 7.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 77.55999999999999,
+      "kh": 88.02
+    },
+    "loss_rmse": {
+      "tn": 87.07828661612493,
+      "kh": 156.40247440497865
+    }
+  },
+  {
+    "typhoon_id": "196729",
+    "target_rainfall": {
+      "tn": 16.5,
+      "kh": 19.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 5.799999999999999,
+      "kh": 27.439999999999998
+    },
+    "loss_rmse": {
+      "tn": 7.297396796118462,
+      "kh": 37.84468258553637
+    }
+  },
+  {
+    "typhoon_id": "196733",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 0.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 135.98,
+      "kh": 212.88000000000002
+    },
+    "loss_rmse": {
+      "tn": 151.18979462913492,
+      "kh": 255.6841254360544
+    }
+  },
+  {
+    "typhoon_id": "196805",
+    "target_rainfall": {
+      "tn": 76.0,
+      "kh": 43.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 54.58,
+      "kh": 174.66
+    },
+    "loss_rmse": {
+      "tn": 62.213840903773175,
+      "kh": 229.64680272104815
+    }
+  },
+  {
+    "typhoon_id": "196812",
+    "target_rainfall": {
+      "tn": 24.7,
+      "kh": 23.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 12.8,
+      "kh": 38.56000000000001
+    },
+    "loss_rmse": {
+      "tn": 14.768479948864067,
+      "kh": 47.532515186974905
+    }
+  },
+  {
+    "typhoon_id": "196817",
+    "target_rainfall": {
+      "tn": 179.4,
+      "kh": 270.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 98.48,
+      "kh": 164.3
+    },
+    "loss_rmse": {
+      "tn": 107.98201702135407,
+      "kh": 171.5702946316757
+    }
+  },
+  {
+    "typhoon_id": "196905",
+    "target_rainfall": {
+      "tn": 5.9,
+      "kh": 27.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 4.779999999999999,
+      "kh": 8.440000000000001
+    },
+    "loss_rmse": {
+      "tn": 5.884046226874837,
+      "kh": 9.489362465413576
+    }
+  },
+  {
+    "typhoon_id": "196908",
+    "target_rainfall": {
+      "tn": 2.4,
+      "kh": 4.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 26.5,
+      "kh": 25.7
+    },
+    "loss_rmse": {
+      "tn": 49.47413465640404,
+      "kh": 49.83807781205049
+    }
+  },
+  {
+    "typhoon_id": "196911",
+    "target_rainfall": {
+      "tn": 212.2,
+      "kh": 30.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 61.0,
+      "kh": 73.39999999999999
+    },
+    "loss_rmse": {
+      "tn": 76.12282180791776,
+      "kh": 93.22435304146657
+    }
+  },
+  {
+    "typhoon_id": "196912",
+    "target_rainfall": {
+      "tn": 13.9,
+      "kh": 12.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 3.9,
+      "kh": 9.459999999999999
+    },
+    "loss_rmse": {
+      "tn": 6.325345840347387,
+      "kh": 11.137414421668971
+    }
+  },
+  {
+    "typhoon_id": "197015",
+    "target_rainfall": {
+      "tn": 85.8,
+      "kh": 64.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 38.86,
+      "kh": 28.22
+    },
+    "loss_rmse": {
+      "tn": 43.86919192326204,
+      "kh": 31.310732984074324
+    }
+  },
+  {
+    "typhoon_id": "197118",
+    "target_rainfall": {
+      "tn": 178.0,
+      "kh": 180.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 71.06,
+      "kh": 50.48
+    },
+    "loss_rmse": {
+      "tn": 83.21498663101497,
+      "kh": 58.33791220124353
+    }
+  },
+  {
+    "typhoon_id": "197126",
+    "target_rainfall": {
+      "tn": 245.9,
+      "kh": 80.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 167.22,
+      "kh": 217.42
+    },
+    "loss_rmse": {
+      "tn": 239.73766078778698,
+      "kh": 349.0540789046878
+    }
+  },
+  {
+    "typhoon_id": "197127",
+    "target_rainfall": {
+      "tn": 7.7,
+      "kh": 0.9
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 85.175,
+      "kh": 69.55
+    },
+    "loss_rmse": {
+      "tn": 114.82768612142281,
+      "kh": 100.18285781509728
+    }
+  },
+  {
+    "typhoon_id": "197213",
+    "target_rainfall": {
+      "tn": 18.3,
+      "kh": 9.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 14.52,
+      "kh": 11.98
+    },
+    "loss_rmse": {
+      "tn": 14.72657461869528,
+      "kh": 15.984680165708665
+    }
+  },
+  {
+    "typhoon_id": "197301",
+    "target_rainfall": {
+      "tn": 13.7,
+      "kh": 76.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 52.82000000000001,
+      "kh": 44.14
+    },
+    "loss_rmse": {
+      "tn": 64.9530137868906,
+      "kh": 48.86424050366485
+    }
+  },
+  {
+    "typhoon_id": "197315",
+    "target_rainfall": {
+      "tn": 120.1,
+      "kh": 148.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 37.379999999999995,
+      "kh": 40.92
+    },
+    "loss_rmse": {
+      "tn": 55.86170423465435,
+      "kh": 45.46255602141173
+    }
+  },
+  {
+    "typhoon_id": "197411",
+    "target_rainfall": {
+      "tn": 0.7,
+      "kh": 1.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 48.34000000000001,
+      "kh": 54.06
+    },
+    "loss_rmse": {
+      "tn": 85.14081277507282,
+      "kh": 69.41537293712395
+    }
+  },
+  {
+    "typhoon_id": "197421",
+    "target_rainfall": {
+      "tn": 14.0,
+      "kh": 23.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 4.6,
+      "kh": 13.419999999999998
+    },
+    "loss_rmse": {
+      "tn": 6.527480371475658,
+      "kh": 17.3364933017032
+    }
+  },
+  {
+    "typhoon_id": "197423",
+    "target_rainfall": {
+      "tn": 20.7,
+      "kh": 52.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 8.8,
+      "kh": 22.98
+    },
+    "loss_rmse": {
+      "tn": 9.237965143904798,
+      "kh": 25.3001581022728
+    }
+  },
+  {
+    "typhoon_id": "197503",
+    "target_rainfall": {
+      "tn": 131.1,
+      "kh": 51.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 60.65999999999999,
+      "kh": 43.3
+    },
+    "loss_rmse": {
+      "tn": 67.7202333132425,
+      "kh": 54.74082571536531
+    }
+  },
+  {
+    "typhoon_id": "197512",
+    "target_rainfall": {
+      "tn": 30.0,
+      "kh": 26.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 32.14,
+      "kh": 76.58
+    },
+    "loss_rmse": {
+      "tn": 35.40098868675845,
+      "kh": 88.69553540060514
+    }
+  },
+  {
+    "typhoon_id": "197515",
+    "target_rainfall": {
+      "tn": 15.6,
+      "kh": 30.9
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 3.9400000000000004,
+      "kh": 12.959999999999999
+    },
+    "loss_rmse": {
+      "tn": 5.034083829258309,
+      "kh": 14.669014963520898
+    }
+  },
+  {
+    "typhoon_id": "197704",
+    "target_rainfall": {
+      "tn": 146.8,
+      "kh": 257.4
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 36.36000000000001,
+      "kh": 109.3
+    },
+    "loss_rmse": {
+      "tn": 40.570580474033164,
+      "kh": 128.60173404740698
+    }
+  },
+  {
+    "typhoon_id": "197705",
+    "target_rainfall": {
+      "tn": 15.6,
+      "kh": 3.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 114.46,
+      "kh": 83.46000000000001
+    },
+    "loss_rmse": {
+      "tn": 138.50724890777377,
+      "kh": 100.7157485202786
+    }
+  },
+  {
+    "typhoon_id": "197804",
+    "target_rainfall": {
+      "tn": 0.3,
+      "kh": 26.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 187.9,
+      "kh": 248.88000000000002
+    },
+    "loss_rmse": {
+      "tn": 262.73909111512125,
+      "kh": 343.81763770929496
+    }
+  },
+  {
+    "typhoon_id": "197812",
+    "target_rainfall": {
+      "tn": 2.1,
+      "kh": 67.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 60.54,
+      "kh": 105.66
+    },
+    "loss_rmse": {
+      "tn": 95.64226053372013,
+      "kh": 137.9337159653143
+    }
+  },
+  {
+    "typhoon_id": "197823",
+    "target_rainfall": {
+      "tn": 13.7,
+      "kh": 18.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 25.58,
+      "kh": 38.58
+    },
+    "loss_rmse": {
+      "tn": 44.53715302980198,
+      "kh": 49.832900778501745
+    }
+  },
+  {
+    "typhoon_id": "197908",
+    "target_rainfall": {
+      "tn": 13.1,
+      "kh": 24.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 4.359999999999999,
+      "kh": 24.419999999999998
+    },
+    "loss_rmse": {
+      "tn": 5.305468876546162,
+      "kh": 38.61769024682859
+    }
+  },
+  {
+    "typhoon_id": "197909",
+    "target_rainfall": {
+      "tn": 34.3,
+      "kh": 15.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 22.02,
+      "kh": 9.58
+    },
+    "loss_rmse": {
+      "tn": 23.422254374846155,
+      "kh": 10.910820317464678
+    }
+  },
+  {
+    "typhoon_id": "198007",
+    "target_rainfall": {
+      "tn": 2.4,
+      "kh": 7.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 12.260000000000002,
+      "kh": 38.4
+    },
+    "loss_rmse": {
+      "tn": 18.913645867468283,
+      "kh": 55.68608443767617
+    }
+  },
+  {
+    "typhoon_id": "198012",
+    "target_rainfall": {
+      "tn": 40.2,
+      "kh": 14.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 41.275,
+      "kh": 12.225
+    },
+    "loss_rmse": {
+      "tn": 44.16104052216161,
+      "kh": 13.56788487569083
+    }
+  },
+  {
+    "typhoon_id": "198014",
+    "target_rainfall": {
+      "tn": 4.0,
+      "kh": 18.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 41.88,
+      "kh": 61.44
+    },
+    "loss_rmse": {
+      "tn": 46.60321877295601,
+      "kh": 75.46519727662546
+    }
+  },
+  {
+    "typhoon_id": "198104",
+    "target_rainfall": {
+      "tn": 106.5,
+      "kh": 291.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 55.2,
+      "kh": 193.4
+    },
+    "loss_rmse": {
+      "tn": 60.52487092096935,
+      "kh": 199.8050249618362
+    }
+  },
+  {
+    "typhoon_id": "198105",
+    "target_rainfall": {
+      "tn": 5.0,
+      "kh": 49.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 34.32,
+      "kh": 48.28
+    },
+    "loss_rmse": {
+      "tn": 61.8877693894359,
+      "kh": 59.28591738347311
+    }
+  },
+  {
+    "typhoon_id": "198108",
+    "target_rainfall": {
+      "tn": 185.7,
+      "kh": 196.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 119.07999999999997,
+      "kh": 117.5
+    },
+    "loss_rmse": {
+      "tn": 132.5072979122282,
+      "kh": 130.46932972925094
+    }
+  },
+  {
+    "typhoon_id": "198117",
+    "target_rainfall": {
+      "tn": 59.0,
+      "kh": 14.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 40.08,
+      "kh": 42.12
+    },
+    "loss_rmse": {
+      "tn": 45.653477414102866,
+      "kh": 54.278504032443635
+    }
+  },
+  {
+    "typhoon_id": "198119",
+    "target_rainfall": {
+      "tn": 12.6,
+      "kh": 41.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 8.7,
+      "kh": 16.72
+    },
+    "loss_rmse": {
+      "tn": 10.367931326933064,
+      "kh": 19.261256449152015
+    }
+  },
+  {
+    "typhoon_id": "198210",
+    "target_rainfall": {
+      "tn": 197.6,
+      "kh": 276.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 71.64,
+      "kh": 141.38
+    },
+    "loss_rmse": {
+      "tn": 90.57547129328117,
+      "kh": 151.8736119278132
+    }
+  },
+  {
+    "typhoon_id": "198212",
+    "target_rainfall": {
+      "tn": 14.3,
+      "kh": 22.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 4.0200000000000005,
+      "kh": 7.06
+    },
+    "loss_rmse": {
+      "tn": 6.250279993728281,
+      "kh": 8.109377288053627
+    }
+  },
+  {
+    "typhoon_id": "198213",
+    "target_rainfall": {
+      "tn": 77.9,
+      "kh": 152.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 22.200000000000003,
+      "kh": 48.46
+    },
+    "loss_rmse": {
+      "tn": 27.54269413111216,
+      "kh": 62.70261557542875
+    }
+  },
+  {
+    "typhoon_id": "198304",
+    "target_rainfall": {
+      "tn": 20.1,
+      "kh": 55.4
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 8.96,
+      "kh": 35.160000000000004
+    },
+    "loss_rmse": {
+      "tn": 10.23816389788716,
+      "kh": 36.61032641209308
+    }
+  },
+  {
+    "typhoon_id": "198309",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 5.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 15.780000000000001,
+      "kh": 38.64000000000001
+    },
+    "loss_rmse": {
+      "tn": 21.002237975987224,
+      "kh": 56.45383955055671
+    }
+  },
+  {
+    "typhoon_id": "198402",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 9.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 26.160000000000004,
+      "kh": 57.36
+    },
+    "loss_rmse": {
+      "tn": 34.090761211800476,
+      "kh": 71.84909185229832
+    }
+  },
+  {
+    "typhoon_id": "198403",
+    "target_rainfall": {
+      "tn": 17.3,
+      "kh": 29.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 31.72,
+      "kh": 61.0
+    },
+    "loss_rmse": {
+      "tn": 56.16294151840695,
+      "kh": 82.25732794104121
+    }
+  },
+  {
+    "typhoon_id": "198408",
+    "target_rainfall": {
+      "tn": 5.7,
+      "kh": 6.4
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 10.1,
+      "kh": 16.74
+    },
+    "loss_rmse": {
+      "tn": 15.883135710557912,
+      "kh": 27.863057980056677
+    }
+  },
+  {
+    "typhoon_id": "198412",
+    "target_rainfall": {
+      "tn": 29.7,
+      "kh": 70.4
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 14.139999999999997,
+      "kh": 30.500000000000007
+    },
+    "loss_rmse": {
+      "tn": 15.631186775162018,
+      "kh": 33.4378528018771
+    }
+  },
+  {
+    "typhoon_id": "198504",
+    "target_rainfall": {
+      "tn": 7.8,
+      "kh": 37.9
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 6.9799999999999995,
+      "kh": 18.32
+    },
+    "loss_rmse": {
+      "tn": 10.25777753706913,
+      "kh": 20.96139308347611
+    }
+  },
+  {
+    "typhoon_id": "198506",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 1.3199999999999998,
+      "kh": 0.8400000000000001
+    },
+    "loss_rmse": {
+      "tn": 2.1633307652783933,
+      "kh": 1.8782971010998233
+    }
+  },
+  {
+    "typhoon_id": "198510",
+    "target_rainfall": {
+      "tn": 32.0,
+      "kh": 32.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 35.04,
+      "kh": 30.48
+    },
+    "loss_rmse": {
+      "tn": 44.58336012460254,
+      "kh": 41.12736315398788
+    }
+  },
+  {
+    "typhoon_id": "198516",
+    "target_rainfall": {
+      "tn": 3.1,
+      "kh": 11.4
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 5.799999999999999,
+      "kh": 23.999999999999996
+    },
+    "loss_rmse": {
+      "tn": 8.66371744691619,
+      "kh": 38.98917798569238
+    }
+  },
+  {
+    "typhoon_id": "198605",
+    "target_rainfall": {
+      "tn": 25.6,
+      "kh": 151.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 5.880000000000001,
+      "kh": 118.9
+    },
+    "loss_rmse": {
+      "tn": 8.791359394314398,
+      "kh": 119.99459154478588
+    }
+  },
+  {
+    "typhoon_id": "198607",
+    "target_rainfall": {
+      "tn": 25.8,
+      "kh": 52.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 15.12,
+      "kh": 25.16
+    },
+    "loss_rmse": {
+      "tn": 16.678249308605505,
+      "kh": 28.59209681013269
+    }
+  },
+  {
+    "typhoon_id": "198613",
+    "target_rainfall": {
+      "tn": 137.7,
+      "kh": 148.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 52.43999999999998,
+      "kh": 112.13999999999999
+    },
+    "loss_rmse": {
+      "tn": 74.95662745881779,
+      "kh": 141.20666414868668
+    }
+  },
+  {
+    "typhoon_id": "198706",
+    "target_rainfall": {
+      "tn": 187.8,
+      "kh": 132.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 140.26000000000002,
+      "kh": 107.92
+    },
+    "loss_rmse": {
+      "tn": 148.40209567253424,
+      "kh": 115.11621953486834
+    }
+  },
+  {
+    "typhoon_id": "198708",
+    "target_rainfall": {
+      "tn": 24.0,
+      "kh": 61.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 42.08,
+      "kh": 52.6
+    },
+    "loss_rmse": {
+      "tn": 74.49050946261545,
+      "kh": 59.793812388908606
+    }
+  },
+  {
+    "typhoon_id": "198714",
+    "target_rainfall": {
+      "tn": 113.7,
+      "kh": 116.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 23.999999999999996,
+      "kh": 69.74
+    },
+    "loss_rmse": {
+      "tn": 30.967402215878558,
+      "kh": 81.70281512897826
+    }
+  },
+  {
+    "typhoon_id": "198720",
+    "target_rainfall": {
+      "tn": 40.4,
+      "kh": 94.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 29.940000000000005,
+      "kh": 66.44000000000001
+    },
+    "loss_rmse": {
+      "tn": 31.621353544717213,
+      "kh": 74.51882983514972
+    }
+  },
+  {
+    "typhoon_id": "198802",
+    "target_rainfall": {
+      "tn": 47.5,
+      "kh": 119.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 29.78,
+      "kh": 100.58000000000001
+    },
+    "loss_rmse": {
+      "tn": 36.506191255730855,
+      "kh": 108.32893426965853
+    }
+  },
+  {
+    "typhoon_id": "198919",
+    "target_rainfall": {
+      "tn": 277.2,
+      "kh": 350.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 151.76,
+      "kh": 232.71999999999997
+    },
+    "loss_rmse": {
+      "tn": 168.71361533675935,
+      "kh": 255.46862821098014
+    }
+  },
+  {
+    "typhoon_id": "199003",
+    "target_rainfall": {
+      "tn": 59.7,
+      "kh": 33.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 59.239999999999995,
+      "kh": 26.78
+    },
+    "loss_rmse": {
+      "tn": 78.49015224854644,
+      "kh": 43.21904672710864
+    }
+  },
+  {
+    "typhoon_id": "199005",
+    "target_rainfall": {
+      "tn": 141.7,
+      "kh": 162.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 121.08,
+      "kh": 123.96
+    },
+    "loss_rmse": {
+      "tn": 121.99175381967422,
+      "kh": 125.52827569914277
+    }
+  },
+  {
+    "typhoon_id": "199012",
+    "target_rainfall": {
+      "tn": 47.2,
+      "kh": 153.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 55.02,
+      "kh": 119.94000000000001
+    },
+    "loss_rmse": {
+      "tn": 82.53371432329942,
+      "kh": 124.84789946170501
+    }
+  },
+  {
+    "typhoon_id": "199014",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 1.54,
+      "kh": 0.8400000000000001
+    },
+    "loss_rmse": {
+      "tn": 2.2185580902919804,
+      "kh": 1.8782971010998233
+    }
+  },
+  {
+    "typhoon_id": "199017",
+    "target_rainfall": {
+      "tn": 48.5,
+      "kh": 127.9
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 161.44,
+      "kh": 62.459999999999994
+    },
+    "loss_rmse": {
+      "tn": 213.6055336361865,
+      "kh": 81.5996691169762
+    }
+  },
+  {
+    "typhoon_id": "199107",
+    "target_rainfall": {
+      "tn": 16.5,
+      "kh": 108.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 7.0200000000000005,
+      "kh": 80.56
+    },
+    "loss_rmse": {
+      "tn": 7.872102641607261,
+      "kh": 81.89512806022103
+    }
+  },
+  {
+    "typhoon_id": "199111",
+    "target_rainfall": {
+      "tn": 16.5,
+      "kh": 55.4
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 84.78,
+      "kh": 90.97999999999999
+    },
+    "loss_rmse": {
+      "tn": 126.75279089629545,
+      "kh": 136.96752169766378
+    }
+  },
+  {
+    "typhoon_id": "199215",
+    "target_rainfall": {
+      "tn": 219.4,
+      "kh": 329.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 92.16,
+      "kh": 200.74
+    },
+    "loss_rmse": {
+      "tn": 113.65493390082104,
+      "kh": 218.29350425516563
+    }
+  },
+  {
+    "typhoon_id": "199219",
+    "target_rainfall": {
+      "tn": 46.2,
+      "kh": 69.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 51.540000000000006,
+      "kh": 43.44
+    },
+    "loss_rmse": {
+      "tn": 69.03493318603272,
+      "kh": 48.43845579702145
+    }
+  },
+  {
+    "typhoon_id": "199316",
+    "target_rainfall": {
+      "tn": 4.5,
+      "kh": 10.6
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 14.9,
+      "kh": 37.9
+    },
+    "loss_rmse": {
+      "tn": 19.817719344061768,
+      "kh": 53.59236885975466
+    }
+  },
+  {
+    "typhoon_id": "199405",
+    "target_rainfall": {
+      "tn": 44.6,
+      "kh": 43.4
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 88.66,
+      "kh": 78.38
+    },
+    "loss_rmse": {
+      "tn": 111.88471745506621,
+      "kh": 89.28575474284797
+    }
+  },
+  {
+    "typhoon_id": "199412",
+    "target_rainfall": {
+      "tn": 477.5,
+      "kh": 218.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 321.36,
+      "kh": 169.84
+    },
+    "loss_rmse": {
+      "tn": 335.974421645458,
+      "kh": 219.17359329992289
+    }
+  },
+  {
+    "typhoon_id": "199413",
+    "target_rainfall": {
+      "tn": 24.9,
+      "kh": 30.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 12.28,
+      "kh": 38.1
+    },
+    "loss_rmse": {
+      "tn": 15.928716206901296,
+      "kh": 57.3530644342567
+    }
+  },
+  {
+    "typhoon_id": "199415",
+    "target_rainfall": {
+      "tn": 8.0,
+      "kh": 9.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 11.22,
+      "kh": 17.080000000000002
+    },
+    "loss_rmse": {
+      "tn": 13.357769274845259,
+      "kh": 24.74752512878813
+    }
+  },
+  {
+    "typhoon_id": "199416",
+    "target_rainfall": {
+      "tn": 1.1,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 37.10000000000001,
+      "kh": 26.85
+    },
+    "loss_rmse": {
+      "tn": 54.67316526414032,
+      "kh": 41.85194141255576
+    }
+  },
+  {
+    "typhoon_id": "199427",
+    "target_rainfall": {
+      "tn": 3.1,
+      "kh": 1.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 15.280000000000001,
+      "kh": 23.14
+    },
+    "loss_rmse": {
+      "tn": 20.06619047054024,
+      "kh": 28.01567418428477
+    }
+  },
+  {
+    "typhoon_id": "199502",
+    "target_rainfall": {
+      "tn": 14.3,
+      "kh": 32.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 126.82000000000001,
+      "kh": 72.97999999999999
+    },
+    "loss_rmse": {
+      "tn": 216.77775254854913,
+      "kh": 108.27345935177281
+    }
+  },
+  {
+    "typhoon_id": "199505",
+    "target_rainfall": {
+      "tn": 55.3,
+      "kh": 48.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 20.619999999999997,
+      "kh": 29.860000000000003
+    },
+    "loss_rmse": {
+      "tn": 27.507344473794625,
+      "kh": 43.496367664438374
+    }
+  },
+  {
+    "typhoon_id": "199509",
+    "target_rainfall": {
+      "tn": 5.2,
+      "kh": 16.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 3.44,
+      "kh": 14.860000000000003
+    },
+    "loss_rmse": {
+      "tn": 4.495330911067616,
+      "kh": 24.396516144728533
+    }
+  },
+  {
+    "typhoon_id": "199515",
+    "target_rainfall": {
+      "tn": 50.0,
+      "kh": 40.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 38.1,
+      "kh": 28.860000000000003
+    },
+    "loss_rmse": {
+      "tn": 41.36232585336564,
+      "kh": 38.327718429356054
+    }
+  },
+  {
+    "typhoon_id": "199603",
+    "target_rainfall": {
+      "tn": 22.9,
+      "kh": 20.3
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 15.879999999999999,
+      "kh": 20.48
+    },
+    "loss_rmse": {
+      "tn": 18.81892664314307,
+      "kh": 21.043954001090192
+    }
+  },
+  {
+    "typhoon_id": "199607",
+    "target_rainfall": {
+      "tn": 128.2,
+      "kh": 188.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 24.119999999999997,
+      "kh": 48.419999999999995
+    },
+    "loss_rmse": {
+      "tn": 34.502173844556516,
+      "kh": 53.57751394008497
+    }
+  },
+  {
+    "typhoon_id": "199608",
+    "target_rainfall": {
+      "tn": 214.0,
+      "kh": 183.7
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 105.22,
+      "kh": 140.54
+    },
+    "loss_rmse": {
+      "tn": 137.34660534574564,
+      "kh": 146.17349280905893
+    }
+  },
+  {
+    "typhoon_id": "199714",
+    "target_rainfall": {
+      "tn": 1.1,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 17.699999999999996,
+      "kh": 23.3
+    },
+    "loss_rmse": {
+      "tn": 28.108753085115676,
+      "kh": 36.801059767349095
+    }
+  },
+  {
+    "typhoon_id": "199717",
+    "target_rainfall": {
+      "tn": 22.8,
+      "kh": 42.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 55.64,
+      "kh": 71.91999999999999
+    },
+    "loss_rmse": {
+      "tn": 79.3373304315188,
+      "kh": 84.95050323570779
+    }
+  },
+  {
+    "typhoon_id": "199801",
+    "target_rainfall": {
+      "tn": 138.0,
+      "kh": 153.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 56.24000000000001,
+      "kh": 116.6
+    },
+    "loss_rmse": {
+      "tn": 67.64672941096265,
+      "kh": 117.68087355216225
+    }
+  },
+  {
+    "typhoon_id": "199802",
+    "target_rainfall": {
+      "tn": 155.0,
+      "kh": 127.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 91.22,
+      "kh": 64.02000000000001
+    },
+    "loss_rmse": {
+      "tn": 106.5203360865896,
+      "kh": 81.27802901153545
+    }
+  },
+  {
+    "typhoon_id": "199809",
+    "target_rainfall": {
+      "tn": 1.7,
+      "kh": 1.8
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 87.24000000000001,
+      "kh": 99.74
+    },
+    "loss_rmse": {
+      "tn": 133.75465599372606,
+      "kh": 149.3998460507908
+    }
+  },
+  {
+    "typhoon_id": "199810",
+    "target_rainfall": {
+      "tn": 72.0,
+      "kh": 72.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 54.15999999999999,
+      "kh": 43.2
+    },
+    "loss_rmse": {
+      "tn": 54.96700828678963,
+      "kh": 49.72375689748311
+    }
+  },
+  {
+    "typhoon_id": "199812",
+    "target_rainfall": {
+      "tn": 28.5,
+      "kh": 76.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 62.48,
+      "kh": 50.04
+    },
+    "loss_rmse": {
+      "tn": 83.72827479412196,
+      "kh": 61.96421547958144
+    }
+  },
+  {
+    "typhoon_id": "199906",
+    "target_rainfall": {
+      "tn": 2.9,
+      "kh": 69.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 6.44,
+      "kh": 43.019999999999996
+    },
+    "loss_rmse": {
+      "tn": 8.683547662102168,
+      "kh": 45.7026695062772
+    }
+  },
+  {
+    "typhoon_id": "199920",
+    "target_rainfall": {
+      "tn": 55.5,
+      "kh": 137.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 37.419999999999995,
+      "kh": 42.32000000000001
+    },
+    "loss_rmse": {
+      "tn": 43.728457553405654,
+      "kh": 48.21468655918029
+    }
+  },
+  {
+    "typhoon_id": "200004",
+    "target_rainfall": {
+      "tn": 55.0,
+      "kh": 23.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 82.28,
+      "kh": 236.00000000000006
+    },
+    "loss_rmse": {
+      "tn": 123.69279688001237,
+      "kh": 338.30686070489315
+    }
+  },
+  {
+    "typhoon_id": "200010",
+    "target_rainfall": {
+      "tn": 256.0,
+      "kh": 129.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 113.24000000000001,
+      "kh": 71.88
+    },
+    "loss_rmse": {
+      "tn": 125.05952182860767,
+      "kh": 83.9379056207623
+    }
+  },
+  {
+    "typhoon_id": "200012",
+    "target_rainfall": {
+      "tn": 4.2,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 3.72,
+      "kh": 0.8400000000000001
+    },
+    "loss_rmse": {
+      "tn": 3.8418745424597094,
+      "kh": 1.8782971010998233
+    }
+  },
+  {
+    "typhoon_id": "200020",
+    "target_rainfall": {
+      "tn": 96.0,
+      "kh": 162.1
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 62.02,
+      "kh": 83.63999999999999
+    },
+    "loss_rmse": {
+      "tn": 68.33562760376172,
+      "kh": 97.2626752665173
+    }
+  },
+  {
+    "typhoon_id": "200101",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 5.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 17.919999999999998,
+      "kh": 26.02
+    },
+    "loss_rmse": {
+      "tn": 25.504117314661176,
+      "kh": 29.59293834684214
+    }
+  },
+  {
+    "typhoon_id": "200102",
+    "target_rainfall": {
+      "tn": 204.0,
+      "kh": 123.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 85.82000000000001,
+      "kh": 99.24
+    },
+    "loss_rmse": {
+      "tn": 102.12726374480029,
+      "kh": 105.0251398475622
+    }
+  },
+  {
+    "typhoon_id": "200104",
+    "target_rainfall": {
+      "tn": 0.2,
+      "kh": 7.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 15.560000000000002,
+      "kh": 31.24
+    },
+    "loss_rmse": {
+      "tn": 18.53224217411374,
+      "kh": 37.853190090136394
+    }
+  },
+  {
+    "typhoon_id": "200105",
+    "target_rainfall": {
+      "tn": 15.0,
+      "kh": 169.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 40.76,
+      "kh": 70.86
+    },
+    "loss_rmse": {
+      "tn": 48.6120561177986,
+      "kh": 93.5493345780717
+    }
+  },
+  {
+    "typhoon_id": "200108",
+    "target_rainfall": {
+      "tn": 24.6,
+      "kh": 3.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 74.0,
+      "kh": 107.88
+    },
+    "loss_rmse": {
+      "tn": 93.42190321332573,
+      "kh": 128.72606573650887
+    }
+  },
+  {
+    "typhoon_id": "200119",
+    "target_rainfall": {
+      "tn": 33.3,
+      "kh": 101.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 15.36,
+      "kh": 54.2
+    },
+    "loss_rmse": {
+      "tn": 23.148563670344647,
+      "kh": 56.408474540621995
+    }
+  },
+  {
+    "typhoon_id": "200208",
+    "target_rainfall": {
+      "tn": 29.0,
+      "kh": 10.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 48.279999999999994,
+      "kh": 37.92
+    },
+    "loss_rmse": {
+      "tn": 87.23212710922506,
+      "kh": 55.058913901383846
+    }
+  },
+  {
+    "typhoon_id": "200216",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 1.42,
+      "kh": 12.440000000000001
+    },
+    "loss_rmse": {
+      "tn": 2.1748563170931545,
+      "kh": 26.006306927358985
+    }
+  },
+  {
+    "typhoon_id": "200309",
+    "target_rainfall": {
+      "tn": 72.0,
+      "kh": 190.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 26.32,
+      "kh": 103.9
+    },
+    "loss_rmse": {
+      "tn": 31.418020306823916,
+      "kh": 115.82040407458437
+    }
+  },
+  {
+    "typhoon_id": "200313",
+    "target_rainfall": {
+      "tn": 25.0,
+      "kh": 19.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 12.959999999999999,
+      "kh": 28.360000000000003
+    },
+    "loss_rmse": {
+      "tn": 14.274732922195078,
+      "kh": 43.044442149945446
+    }
+  },
+  {
+    "typhoon_id": "200319",
+    "target_rainfall": {
+      "tn": 3.0,
+      "kh": 48.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 59.09999999999999,
+      "kh": 76.89999999999999
+    },
+    "loss_rmse": {
+      "tn": 105.03764087221303,
+      "kh": 118.83565963127398
+    }
+  },
+  {
+    "typhoon_id": "200407",
+    "target_rainfall": {
+      "tn": 298.2,
+      "kh": 246.2
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 162.06,
+      "kh": 220.11999999999998
+    },
+    "loss_rmse": {
+      "tn": 198.89287066156996,
+      "kh": 246.47749593015584
+    }
+  },
+  {
+    "typhoon_id": "200417",
+    "target_rainfall": {
+      "tn": 81.0,
+      "kh": 47.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 41.54,
+      "kh": 30.379999999999995
+    },
+    "loss_rmse": {
+      "tn": 48.27548031868766,
+      "kh": 37.63171534756288
+    }
+  },
+  {
+    "typhoon_id": "200420",
+    "target_rainfall": {
+      "tn": 0.7,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 8.5,
+      "kh": 19.16
+    },
+    "loss_rmse": {
+      "tn": 13.088391803426424,
+      "kh": 26.45033081078571
+    }
+  },
+  {
+    "typhoon_id": "200424",
+    "target_rainfall": {
+      "tn": 0.1,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 12.979999999999999,
+      "kh": 49.160000000000004
+    },
+    "loss_rmse": {
+      "tn": 16.454482671904334,
+      "kh": 72.65003785270865
+    }
+  },
+  {
+    "typhoon_id": "200427",
+    "target_rainfall": {
+      "tn": 102.0,
+      "kh": 156.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 40.300000000000004,
+      "kh": 41.325
+    },
+    "loss_rmse": {
+      "tn": 46.63544789106244,
+      "kh": 59.36874177544948
+    }
+  },
+  {
+    "typhoon_id": "200505",
+    "target_rainfall": {
+      "tn": 408.5,
+      "kh": 363.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 213.08,
+      "kh": 301.58
+    },
+    "loss_rmse": {
+      "tn": 235.2356520598015,
+      "kh": 307.59811117755584
+    }
+  },
+  {
+    "typhoon_id": "200509",
+    "target_rainfall": {
+      "tn": 0.5,
+      "kh": 58.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 24.0,
+      "kh": 55.17999999999999
+    },
+    "loss_rmse": {
+      "tn": 49.88883642659948,
+      "kh": 55.299819167877935
+    }
+  },
+  {
+    "typhoon_id": "200513",
+    "target_rainfall": {
+      "tn": 201.0,
+      "kh": 160.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 43.739999999999995,
+      "kh": 78.14000000000001
+    },
+    "loss_rmse": {
+      "tn": 55.50857591399729,
+      "kh": 88.15036018077294
+    }
+  },
+  {
+    "typhoon_id": "200519",
+    "target_rainfall": {
+      "tn": 64.5,
+      "kh": 51.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 98.47999999999999,
+      "kh": 65.93999999999998
+    },
+    "loss_rmse": {
+      "tn": 142.36263554739355,
+      "kh": 78.43156252427973
+    }
+  },
+  {
+    "typhoon_id": "200601",
+    "target_rainfall": {
+      "tn": 35.2,
+      "kh": 28.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 18.78,
+      "kh": 24.02
+    },
+    "loss_rmse": {
+      "tn": 23.690208948002127,
+      "kh": 27.847190163461732
+    }
+  },
+  {
+    "typhoon_id": "200604",
+    "target_rainfall": {
+      "tn": 181.2,
+      "kh": 350.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 70.4,
+      "kh": 260.38
+    },
+    "loss_rmse": {
+      "tn": 91.51874125008494,
+      "kh": 267.53214760099394
+    }
+  },
+  {
+    "typhoon_id": "200605",
+    "target_rainfall": {
+      "tn": 106.5,
+      "kh": 112.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 95.6,
+      "kh": 86.91999999999999
+    },
+    "loss_rmse": {
+      "tn": 168.51685969065528,
+      "kh": 141.18304430773549
+    }
+  },
+  {
+    "typhoon_id": "200609",
+    "target_rainfall": {
+      "tn": 20.0,
+      "kh": 8.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 106.59999999999998,
+      "kh": 195.2
+    },
+    "loss_rmse": {
+      "tn": 150.27575985500786,
+      "kh": 308.19415309184564
+    }
+  },
+  {
+    "typhoon_id": "200706",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "200707",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "200708",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "200712",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "200715",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "200807",
+    "target_rainfall": {
+      "tn": 217.5,
+      "kh": 350.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 106.17999999999999,
+      "kh": 293.02000000000004
+    },
+    "loss_rmse": {
+      "tn": 120.0396184599068,
+      "kh": 294.6370750601492
+    }
+  },
+  {
+    "typhoon_id": "200808",
+    "target_rainfall": {
+      "tn": 141.0,
+      "kh": 168.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 75.32000000000001,
+      "kh": 96.75999999999999
+    },
+    "loss_rmse": {
+      "tn": 92.8219155156798,
+      "kh": 116.40524043186372
+    }
+  },
+  {
+    "typhoon_id": "200813",
+    "target_rainfall": {
+      "tn": 125.5,
+      "kh": 66.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 110.96,
+      "kh": 39.32000000000001
+    },
+    "loss_rmse": {
+      "tn": 111.15043859562587,
+      "kh": 42.78420269211523
+    }
+  },
+  {
+    "typhoon_id": "200815",
+    "target_rainfall": {
+      "tn": 183.0,
+      "kh": 149.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 53.85999999999999,
+      "kh": 71.97999999999999
+    },
+    "loss_rmse": {
+      "tn": 59.652409842352554,
+      "kh": 77.7653779004513
+    }
+  },
+  {
+    "typhoon_id": "200903",
+    "target_rainfall": {
+      "tn": 98.0,
+      "kh": 123.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 40.48,
+      "kh": 44.88000000000001
+    },
+    "loss_rmse": {
+      "tn": 46.64204112171765,
+      "kh": 50.82641045755641
+    }
+  },
+  {
+    "typhoon_id": "200908",
+    "target_rainfall": {
+      "tn": 739.5,
+      "kh": 811.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 523.9,
+      "kh": 683.9399999999999
+    },
+    "loss_rmse": {
+      "tn": 536.1208016855902,
+      "kh": 694.4296695850487
+    }
+  },
+  {
+    "typhoon_id": "201006",
+    "target_rainfall": {
+      "tn": 44.0,
+      "kh": 90.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 33.879999999999995,
+      "kh": 37.220000000000006
+    },
+    "loss_rmse": {
+      "tn": 40.46924758381356,
+      "kh": 40.33244351635542
+    }
+  },
+  {
+    "typhoon_id": "201011",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "201013",
+    "target_rainfall": {
+      "tn": 66.5,
+      "kh": 64.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 39.21999999999999,
+      "kh": 55.8
+    },
+    "loss_rmse": {
+      "tn": 42.430861410063315,
+      "kh": 60.92746507118116
+    }
+  },
+  {
+    "typhoon_id": "201111",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "201205",
+    "target_rainfall": {
+      "tn": 157.0,
+      "kh": 229.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 94.78,
+      "kh": 153.2
+    },
+    "loss_rmse": {
+      "tn": 106.65841738934625,
+      "kh": 168.85258659552719
+    }
+  },
+  {
+    "typhoon_id": "201209",
+    "target_rainfall": {
+      "tn": 83.5,
+      "kh": 61.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 99.64000000000001,
+      "kh": 271.65999999999997
+    },
+    "loss_rmse": {
+      "tn": 137.38226959837283,
+      "kh": 339.11508665938175
+    }
+  },
+  {
+    "typhoon_id": "201307",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "201312",
+    "target_rainfall": {
+      "tn": null,
+      "kh": null
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": null,
+      "kh": null
+    },
+    "loss_rmse": {
+      "tn": null,
+      "kh": null
+    }
+  },
+  {
+    "typhoon_id": "201315",
+    "target_rainfall": {
+      "tn": 235.5,
+      "kh": 305.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 192.06,
+      "kh": 256.0
+    },
+    "loss_rmse": {
+      "tn": 205.3568942110296,
+      "kh": 260.51985720862046
+    }
+  },
+  {
+    "typhoon_id": "201319",
+    "target_rainfall": {
+      "tn": 14.0,
+      "kh": 45.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 4.0600000000000005,
+      "kh": 15.36
+    },
+    "loss_rmse": {
+      "tn": 4.8363209157375,
+      "kh": 17.72986181559236
+    }
+  },
+  {
+    "typhoon_id": "201323",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 0.58,
+      "kh": 12.440000000000001
+    },
+    "loss_rmse": {
+      "tn": 1.0963576058932596,
+      "kh": 26.006306927358985
+    }
+  },
+  {
+    "typhoon_id": "201410",
+    "target_rainfall": {
+      "tn": 57.5,
+      "kh": 142.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 69.03999999999999,
+      "kh": 79.58
+    },
+    "loss_rmse": {
+      "tn": 81.27139718252664,
+      "kh": 95.31760592881045
+    }
+  },
+  {
+    "typhoon_id": "201513",
+    "target_rainfall": {
+      "tn": 240.0,
+      "kh": 223.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 112.0,
+      "kh": 121.08000000000001
+    },
+    "loss_rmse": {
+      "tn": 128.90289368357872,
+      "kh": 138.874720521771
+    }
+  },
+  {
+    "typhoon_id": "201521",
+    "target_rainfall": {
+      "tn": 110.5,
+      "kh": 18.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 48.98,
+      "kh": 40.62
+    },
+    "loss_rmse": {
+      "tn": 68.40893216532473,
+      "kh": 48.76037325533922
+    }
+  },
+  {
+    "typhoon_id": "201601",
+    "target_rainfall": {
+      "tn": 161.5,
+      "kh": 185.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 103.675,
+      "kh": 81.3
+    },
+    "loss_rmse": {
+      "tn": 105.65343108484456,
+      "kh": 101.0734139128584
+    }
+  },
+  {
+    "typhoon_id": "201614",
+    "target_rainfall": {
+      "tn": 139.5,
+      "kh": 357.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 29.480000000000008,
+      "kh": 183.92000000000002
+    },
+    "loss_rmse": {
+      "tn": 36.02532442602009,
+      "kh": 190.9458876226456
+    }
+  },
+  {
+    "typhoon_id": "201617",
+    "target_rainfall": {
+      "tn": 363.0,
+      "kh": 132.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 239.94,
+      "kh": 72.16
+    },
+    "loss_rmse": {
+      "tn": 251.97594726481336,
+      "kh": 80.19064783377173
+    }
+  },
+  {
+    "typhoon_id": "201709",
+    "target_rainfall": {
+      "tn": 14.0,
+      "kh": 12.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 80.86,
+      "kh": 83.53999999999999
+    },
+    "loss_rmse": {
+      "tn": 106.92403845721503,
+      "kh": 153.20299605425475
+    }
+  },
+  {
+    "typhoon_id": "201710",
+    "target_rainfall": {
+      "tn": 317.0,
+      "kh": 239.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 192.76000000000002,
+      "kh": 110.4
+    },
+    "loss_rmse": {
+      "tn": 204.91744679260475,
+      "kh": 133.7177175994266
+    }
+  },
+  {
+    "typhoon_id": "201808",
+    "target_rainfall": {
+      "tn": 0.0,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 22.84,
+      "kh": 23.9
+    },
+    "loss_rmse": {
+      "tn": 50.00999900019995,
+      "kh": 51.597926314920834
+    }
+  },
+  {
+    "typhoon_id": "201909",
+    "target_rainfall": {
+      "tn": 1.5,
+      "kh": 4.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 11.64,
+      "kh": 9.9
+    },
+    "loss_rmse": {
+      "tn": 16.41097193952875,
+      "kh": 14.47929556297543
+    }
+  },
+  {
+    "typhoon_id": "201911",
+    "target_rainfall": {
+      "tn": 55.0,
+      "kh": 118.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 28.560000000000002,
+      "kh": 62.260000000000005
+    },
+    "loss_rmse": {
+      "tn": 32.497446053497804,
+      "kh": 73.65998913928782
+    }
+  },
+  {
+    "typhoon_id": "201918",
+    "target_rainfall": {
+      "tn": 1.0,
+      "kh": 0.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 10.8,
+      "kh": 52.839999999999996
+    },
+    "loss_rmse": {
+      "tn": 15.196446953153227,
+      "kh": 76.27560553676385
+    }
+  },
+  {
+    "typhoon_id": "202020",
+    "target_rainfall": {
+      "tn": 30.5,
+      "kh": 54.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 19.4,
+      "kh": 40.21999999999999
+    },
+    "loss_rmse": {
+      "tn": 21.637282639000674,
+      "kh": 40.576816040690034
+    }
+  },
+  {
+    "typhoon_id": "202114",
+    "target_rainfall": {
+      "tn": 2.0,
+      "kh": 4.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 12.459999999999997,
+      "kh": 14.98
+    },
+    "loss_rmse": {
+      "tn": 15.976294939691117,
+      "kh": 18.11800209736162
+    }
+  },
+  {
+    "typhoon_id": "202211",
+    "target_rainfall": {
+      "tn": 10.0,
+      "kh": 25.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 6.839999999999999,
+      "kh": 14.900000000000002
+    },
+    "loss_rmse": {
+      "tn": 11.169959713445701,
+      "kh": 17.433817711562778
+    }
+  },
+  {
+    "typhoon_id": "202305",
+    "target_rainfall": {
+      "tn": 121.5,
+      "kh": 197.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 32.879999999999995,
+      "kh": 54.94
+    },
+    "loss_rmse": {
+      "tn": 47.47618350288911,
+      "kh": 60.587771043338435
+    }
+  },
+  {
+    "typhoon_id": "202311",
+    "target_rainfall": {
+      "tn": 45.0,
+      "kh": 146.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 41.1,
+      "kh": 85.14
+    },
+    "loss_rmse": {
+      "tn": 57.467817080519076,
+      "kh": 94.86115116316057
+    }
+  },
+  {
+    "typhoon_id": "202314",
+    "target_rainfall": {
+      "tn": 0.5,
+      "kh": 1.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 35.36,
+      "kh": 75.02000000000001
+    },
+    "loss_rmse": {
+      "tn": 46.50040860035533,
+      "kh": 94.95734832018005
+    }
+  },
+  {
+    "typhoon_id": "202403",
+    "target_rainfall": {
+      "tn": 370.5,
+      "kh": 757.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 176.26,
+      "kh": 564.42
+    },
+    "loss_rmse": {
+      "tn": 203.88117617867522,
+      "kh": 581.9603302631547
+    }
+  },
+  {
+    "typhoon_id": "202418",
+    "target_rainfall": {
+      "tn": 102.0,
+      "kh": 480.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 54.24000000000001,
+      "kh": 326.02
+    },
+    "loss_rmse": {
+      "tn": 59.22634548914867,
+      "kh": 340.314322355084
+    }
+  },
+  {
+    "typhoon_id": "202421",
+    "target_rainfall": {
+      "tn": 19.0,
+      "kh": 32.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 106.23999999999998,
+      "kh": 121.44000000000001
+    },
+    "loss_rmse": {
+      "tn": 123.56237291343996,
+      "kh": 143.5744684823872
+    }
+  },
+  {
+    "typhoon_id": "202504",
+    "target_rainfall": {
+      "tn": 184.0,
+      "kh": 300.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 75.05999999999999,
+      "kh": 157.04000000000002
+    },
+    "loss_rmse": {
+      "tn": 86.28175937010093,
+      "kh": 173.35871480834183
+    }
+  },
+  {
+    "typhoon_id": "202511",
+    "target_rainfall": {
+      "tn": 64.5,
+      "kh": 122.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 25.42,
+      "kh": 43.1
+    },
+    "loss_rmse": {
+      "tn": 28.034657122925545,
+      "kh": 48.22204889881806
+    }
+  },
+  {
+    "typhoon_id": "202518",
+    "target_rainfall": {
+      "tn": 14.0,
+      "kh": 60.0
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 7.580000000000001,
+      "kh": 36.260000000000005
+    },
+    "loss_rmse": {
+      "tn": 8.836628316275387,
+      "kh": 39.41611345630109
+    }
+  },
+  {
+    "typhoon_id": "202526",
+    "target_rainfall": {
+      "tn": 5.5,
+      "kh": 6.5
+    },
+    "analog_count": 5,
+    "loss_mae": {
+      "tn": 25.04,
+      "kh": 60.660000000000004
+    },
+    "loss_rmse": {
+      "tn": 37.55715644188202,
+      "kh": 83.82544959616978
+    }
+  }
+]

@@ -25,6 +25,10 @@ from data_pipiline.stage04_feature_engineering.typhoon.extractor import (
     TAIWAN_LON,
     haversine_vec,
 )
+from data_pipiline.stage00_data_ingestion.typhoon.regions import (
+    region_codes,
+    region_label,
+)
 
 
 # 嘗試設定中文字型
@@ -558,15 +562,16 @@ class TyphoonVisualizer:
     # ================================================================
 
     def plot_rainfall_distribution(self, rainfall_records: dict, loader: DataLoader):
-        """各站降水量分布直方圖"""
-        stations = ["臺南", "高雄"]
-        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+        """各地區降水量分布直方圖（rainfall_records: {tid: {region: mm}}）"""
+        codes = region_codes()
+        fig, axes = plt.subplots(1, len(codes), figsize=(7 * len(codes), 5), squeeze=False)
 
-        for idx, station in enumerate(stations):
-            ax = axes[idx]
+        for idx, code in enumerate(codes):
+            ax = axes[0][idx]
+            station = region_label(code)
             vals = []
             for tid, rec in rainfall_records.items():
-                v = rec.tainan_mm if station == "臺南" else rec.kaohsiung_mm
+                v = rec.get(code) if isinstance(rec, dict) else None
                 if v is not None:
                     vals.append(v)
             if vals:
@@ -593,18 +598,19 @@ class TyphoonVisualizer:
         self._save(fig, "rainfall_distribution")
 
     def plot_rainfall_by_category(self, rainfall_records: dict, loader: DataLoader):
-        """各路徑分類的降水箱型圖"""
-        stations = ["臺南", "高雄"]
-        fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+        """各路徑分類的降水箱型圖（各地區）"""
+        codes = region_codes()
+        fig, axes = plt.subplots(1, len(codes), figsize=(7 * len(codes), 6), squeeze=False)
 
-        for idx, station in enumerate(stations):
-            ax = axes[idx]
+        for idx, code in enumerate(codes):
+            ax = axes[0][idx]
+            station = region_label(code)
             cat_data = {}
             for rec in loader.records:
                 rr = rainfall_records.get(rec.typhoon_id)
                 if rr is None:
                     continue
-                v = rr.tainan_mm if station == "臺南" else rr.kaohsiung_mm
+                v = rr.get(code) if isinstance(rr, dict) else None
                 if v is not None:
                     cat_data.setdefault(rec.taiwan_track_category, []).append(v)
 
@@ -638,11 +644,13 @@ class TyphoonVisualizer:
             vec = feat.to_feature_vector()
             names = TyphoonFeatures.feature_names()
             row = {name: vec[i] for i, name in enumerate(names)}
-            if rr.tainan_mm is not None:
-                row["rainfall_tainan"] = rr.tainan_mm
-            if rr.kaohsiung_mm is not None:
-                row["rainfall_kaohsiung"] = rr.kaohsiung_mm
-            if rr.tainan_mm is not None or rr.kaohsiung_mm is not None:
+            has_any = False
+            for code in region_codes():
+                v = rr.get(code) if isinstance(rr, dict) else None
+                if v is not None:
+                    row[f"rainfall_{code}"] = v
+                    has_any = True
+            if has_any:
                 rows.append(row)
 
         if not rows:
@@ -655,7 +663,8 @@ class TyphoonVisualizer:
         # 只看降水與其他特徵的相關性
         corr = df.corr()
         rainfall_cols = [
-            c for c in ["rainfall_tainan", "rainfall_kaohsiung"] if c in corr.columns
+            f"rainfall_{code}" for code in region_codes()
+            if f"rainfall_{code}" in corr.columns
         ]
         if not rainfall_cols:
             return
@@ -676,7 +685,10 @@ class TyphoonVisualizer:
             vmax=1,
         )
         ax.set_title("降水量與颱風特徵相關性")
-        ax.set_xticklabels(["臺南降水", "高雄降水"], rotation=0)
+        ax.set_xticklabels(
+            [f"{region_label(c)}降水" for c in region_codes() if f"rainfall_{c}" in rainfall_cols],
+            rotation=0,
+        )
         fig.tight_layout()
         self._save(fig, "rainfall_feature_correlation")
 
@@ -707,8 +719,11 @@ class TyphoonVisualizer:
                 rr = rainfall_records.get(tid)
                 if rr is None:
                     continue
-                # 用兩站平均
-                vals = [v for v in [rr.tainan_mm, rr.kaohsiung_mm] if v is not None]
+                # 用各地區平均
+                vals = [
+                    rr.get(code) for code in region_codes()
+                    if isinstance(rr, dict) and rr.get(code) is not None
+                ]
                 if not vals:
                     continue
                 vec = feat.to_feature_vector()

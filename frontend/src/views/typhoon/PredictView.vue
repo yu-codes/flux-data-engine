@@ -20,11 +20,12 @@
               <label>算法</label>
               <select v-model="form.method" @change="onMethodChange">
                 <option value="combined_optimized">Combined RRF 優化版</option>
+                <option value="combined_rainfall">Combined RRF + 降水訊號</option>
                 <option value="combined">Combined RRF (KNN+DTW+Rule)</option>
                 <option value="knn_optimized">KNN 優化版 (顯著特徵)</option>
                 <option value="rule_based">Rule-Based (幾何分類)</option>
               </select>
-              <div class="hint">Combined 優化版為推薦方法 (α=0.1, Rule=0.4, DTW=0.5, rrf_k=30)</div>
+              <div class="hint">Combined 優化版為推薦方法 (α=0.1, Rule=0.4, DTW=0.5, rrf_k=30)；降水訊號版額外納入事件降水相似度</div>
             </div>
             <div class="form-group">
               <label>相似數 k</label>
@@ -38,13 +39,37 @@
               <div class="form-group">
                 <label>Rule 權重</label>
                 <input type="number" v-model.number="form.rule_weight" min="0" max="1" step="0.01">
-                <div class="hint">DTW = 1 - α - rule</div>
+                <div class="hint">DTW = 1 - α - rule{{ form.use_rainfall ? ' - rain' : '' }}</div>
               </div>
               <div class="form-group">
                 <label>RRF k</label>
                 <input type="number" v-model.number="form.rrf_k" min="1" max="200">
               </div>
             </template>
+          </div>
+
+          <!-- 降水訊號設定 -->
+          <div class="rainfall-config" v-if="showCombinedParams">
+            <label class="checkbox-row">
+              <input type="checkbox" v-model="form.use_rainfall">
+              <span>使用降水資料作為相似度特徵</span>
+            </label>
+            <div class="param-grid" v-if="form.use_rainfall">
+              <div class="form-group">
+                <label>降水地區</label>
+                <select v-model="form.rainfall_region">
+                  <option v-for="r in regions" :key="r.code" :value="r.code">{{ r.label }} ({{ r.code }})</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>降水權重</label>
+                <input type="number" v-model.number="form.rainfall_weight" min="0" max="1" step="0.05">
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label>預期降水量 (mm)<span class="hint" style="font-weight:400;"> — 選填，啟用降水排序</span></label>
+                <input type="number" v-model.number="form.expected_rainfall" min="0" step="10" placeholder="留空則不依降水排序類比">
+              </div>
+            </div>
           </div>
         </div>
 
@@ -143,19 +168,23 @@
         <!-- Rainfall -->
         <div class="card" v-if="result.rainfall && result.rainfall.stations">
           <h3>降水量預估（類比颱風降水推估）</h3>
+          <p class="hint" v-if="form.use_rainfall" style="margin-bottom:0.75rem;">
+            降水訊號已啟用 — 相似度地區：{{ result.rainfall.region_label }}（{{ result.rainfall.region }}）
+          </p>
           <div class="table-wrapper">
             <table class="data-table">
               <thead>
                 <tr><th>測站</th><th>平均</th><th>中位數</th><th>最小</th><th>最大</th><th>類比數</th></tr>
               </thead>
               <tbody>
-                <tr v-for="(stats, station) in result.rainfall.stations" :key="station">
+                <tr v-for="(stats, station) in result.rainfall.stations" :key="station"
+                    :class="{ 'row-active': stats.region === result.rainfall.region && form.use_rainfall }">
                   <td><strong>{{ station }}</strong></td>
                   <td>{{ stats.mean }} mm</td>
                   <td>{{ stats.median }} mm</td>
                   <td>{{ stats.min }} mm</td>
                   <td>{{ stats.max }} mm</td>
-                  <td>{{ stats.values?.length || '—' }}</td>
+                  <td>{{ stats.count }}</td>
                 </tr>
               </tbody>
             </table>
@@ -237,12 +266,21 @@ const EXAMPLES = {
   ],
 }
 
+const regions = [
+  { code: 'tn', label: '臺南' },
+  { code: 'kh', label: '高雄' },
+]
+
 const form = ref({
   method: 'combined_optimized',
   k: 5,
   alpha: 0.10,
   rule_weight: 0.40,
   rrf_k: 30,
+  use_rainfall: false,
+  rainfall_region: 'tn',
+  rainfall_weight: 0.15,
+  expected_rainfall: null,
 })
 
 const trackInput = ref(JSON.stringify(EXAMPLES.westward, null, 2))
@@ -253,7 +291,9 @@ const error = ref('')
 const modalImg = ref(null)
 
 const showCombinedParams = computed(() =>
-  form.value.method === 'combined' || form.value.method === 'combined_optimized'
+  form.value.method === 'combined' ||
+  form.value.method === 'combined_optimized' ||
+  form.value.method === 'combined_rainfall'
 )
 
 const sortedVotes = computed(() => {
@@ -266,10 +306,17 @@ function onMethodChange() {
     form.value.alpha = 0.10
     form.value.rule_weight = 0.40
     form.value.rrf_k = 30
+    form.value.use_rainfall = false
+  } else if (form.value.method === 'combined_rainfall') {
+    form.value.alpha = 0.10
+    form.value.rule_weight = 0.40
+    form.value.rrf_k = 30
+    form.value.use_rainfall = true  // 此方法本質啟用降水訊號
   } else if (form.value.method === 'combined') {
     form.value.alpha = 0.13
     form.value.rule_weight = 0.25
     form.value.rrf_k = 60
+    form.value.use_rainfall = false
   }
 }
 
@@ -298,6 +345,14 @@ async function submitPredict() {
       payload.alpha = form.value.alpha
       payload.rule_weight = form.value.rule_weight
       payload.rrf_k = form.value.rrf_k
+      payload.use_rainfall = form.value.use_rainfall
+      if (form.value.use_rainfall) {
+        payload.rainfall_region = form.value.rainfall_region
+        payload.rainfall_weight = form.value.rainfall_weight
+        if (form.value.expected_rainfall !== null && form.value.expected_rainfall !== '') {
+          payload.expected_rainfall = form.value.expected_rainfall
+        }
+      }
     }
     const res = await api.typhoonPredict(payload)
     result.value = res.data
@@ -328,6 +383,30 @@ async function submitPredict() {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
+}
+
+.rainfall-config {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border, #e2e8f0);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+}
+
+.row-active {
+  background: rgba(56, 126, 184, 0.1);
 }
 
 .result-metrics {

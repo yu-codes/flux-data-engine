@@ -21,6 +21,11 @@ from data_pipiline.stage05_model_training.typhoon.mapping import (
     ImpactMapper,
     TRACK_CATEGORY_DESCRIPTION,
 )
+from data_pipiline.stage00_data_ingestion.typhoon.regions import (
+    RAINFALL_REGIONS,
+    region_codes,
+    region_label,
+)
 
 router = APIRouter(prefix="/api/typhoon", tags=["typhoon"])
 
@@ -45,6 +50,11 @@ class PredictRequest(BaseModel):
     alpha: float | None = None
     rule_weight: float | None = None
     rrf_k: int | None = None
+    # 降水相關
+    use_rainfall: bool = False
+    rainfall_region: str = "tn"
+    rainfall_weight: float | None = None
+    expected_rainfall: float | None = None  # 查詢颱風預期降水量（啟用降水訊號時可選）
 
 
 class SimilarTyphoon(BaseModel):
@@ -58,10 +68,19 @@ class SimilarTyphoon(BaseModel):
 
 
 class RainfallStation(BaseModel):
+    region: str
+    label: str
     mean: float
     median: float
     min: float
     max: float
+    count: int
+
+
+class RainfallInfo(BaseModel):
+    region: str
+    region_label: str
+    stations: dict[str, RainfallStation]
 
 
 class PredictResponse(BaseModel):
@@ -70,7 +89,7 @@ class PredictResponse(BaseModel):
     confidence: float
     category_votes: dict[str, float]
     similar_typhoons: list[SimilarTyphoon]
-    rainfall: dict[str, RainfallStation] | None = None
+    rainfall: RainfallInfo | None = None
     charts: list[str] = []
 
 
@@ -93,6 +112,13 @@ def predict(req: PredictRequest):
     pipeline = app_state.pipelines.get(req.method)
     if not pipeline:
         raise HTTPException(503, f"Model '{req.method}' not loaded")
+
+    rainfall_in_use = req.use_rainfall or req.method == "combined_rainfall"
+    if rainfall_in_use and req.rainfall_region not in RAINFALL_REGIONS:
+        raise HTTPException(
+            400,
+            f"Unsupported rainfall_region: {req.rainfall_region}. Use one of {region_codes()}",
+        )
 
     # 建立 track DataFrame
     track_df = pd.DataFrame([p.model_dump() for p in req.track])
@@ -121,8 +147,19 @@ def predict(req: PredictRequest):
         query_vec = query_features.to_feature_vector()
 
         sim_kwargs = {"k": req.k}
-        if req.method in ("combined", "combined_optimized"):
+        if req.method in ("combined", "combined_optimized", "combined_rainfall"):
             sim_kwargs["query_features"] = query_features
+            # combined_rainfall 預設啟用降水訊號；其他 combined 方法依請求
+            use_rain = req.use_rainfall or req.method == "combined_rainfall"
+            # 逐請求設定降水訊號
+            if hasattr(pipeline.similarity, "configure_rainfall"):
+                pipeline.similarity.configure_rainfall(
+                    use_rainfall=use_rain,
+                    region=req.rainfall_region,
+                    weight=req.rainfall_weight if req.rainfall_weight is not None else 0.15,
+                )
+                if use_rain and req.expected_rainfall is not None:
+                    sim_kwargs["query_rainfall"] = req.expected_rainfall
         sim_result = pipeline.similarity.find_similar_by_vector(query_vec, **sim_kwargs)
         pred = pipeline.model.predict(
             query_id="query",
@@ -151,32 +188,42 @@ def predict(req: PredictRequest):
             )
         )
 
-    # 降水分析
+    # 降水分析（各地區，依類比颱風推估）
     rainfall_result = None
     if app_state.rainfall_analyzer:
         try:
+            # 收集每個類比颱風各地區降水
             analog_rainfalls = []
             for si in similar_info:
                 rec_rain = app_state.rainfall_analyzer.get_rainfall(si.typhoon_id)
                 if rec_rain:
-                    analog_rainfalls.append(
-                        {"臺南": rec_rain.tainan_mm, "高雄": rec_rain.kaohsiung_mm}
-                    )
+                    analog_rainfalls.append(rec_rain)  # {region: mm|None}
+
             if analog_rainfalls:
-                rainfall_result = {}
-                for station in ["臺南", "高雄"]:
+                stations: dict[str, RainfallStation] = {}
+                for code in region_codes():
                     vals = [
-                        ar[station]
+                        ar[code]
                         for ar in analog_rainfalls
-                        if ar.get(station) is not None
+                        if ar.get(code) is not None
                     ]
                     if vals:
-                        rainfall_result[station] = RainfallStation(
+                        label = region_label(code)
+                        stations[label] = RainfallStation(
+                            region=code,
+                            label=label,
                             mean=round(float(np.mean(vals)), 1),
                             median=round(float(np.median(vals)), 1),
                             min=round(float(min(vals)), 1),
                             max=round(float(max(vals)), 1),
+                            count=len(vals),
                         )
+                if stations:
+                    rainfall_result = RainfallInfo(
+                        region=req.rainfall_region,
+                        region_label=region_label(req.rainfall_region),
+                        stations=stations,
+                    )
         except Exception:
             pass
 

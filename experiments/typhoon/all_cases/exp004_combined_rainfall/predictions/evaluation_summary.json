@@ -1,0 +1,53 @@
+{
+  "method": "combined_rainfall",
+  "accuracy": 0.7828,
+  "total": 198,
+  "correct": 155,
+  "per_category": {
+    "3": {
+      "total": 30,
+      "correct": 23,
+      "accuracy": 0.7666666666666667
+    },
+    "1": {
+      "total": 23,
+      "correct": 23,
+      "accuracy": 1.0
+    },
+    "5": {
+      "total": 30,
+      "correct": 27,
+      "accuracy": 0.9
+    },
+    "8": {
+      "total": 6,
+      "correct": 3,
+      "accuracy": 0.5
+    },
+    "6": {
+      "total": 30,
+      "correct": 27,
+      "accuracy": 0.9
+    },
+    "9": {
+      "total": 18,
+      "correct": 2,
+      "accuracy": 0.1111111111111111
+    },
+    "2": {
+      "total": 29,
+      "correct": 25,
+      "accuracy": 0.8620689655172413
+    },
+    "4": {
+      "total": 21,
+      "correct": 17,
+      "accuracy": 0.8095238095238095
+    },
+    "7": {
+      "total": 11,
+      "correct": 8,
+      "accuracy": 0.7272727272727273
+    }
+  }
+}

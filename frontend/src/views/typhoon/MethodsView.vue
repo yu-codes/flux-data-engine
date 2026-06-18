@@ -13,6 +13,7 @@
     <!-- 方法切換 -->
     <div class="tabs" style="margin-top: 0.5rem;">
       <div class="tab" :class="{active: activeMethod === 'combined'}" @click="activeMethod = 'combined'">Combined RRF</div>
+      <div class="tab" :class="{active: activeMethod === 'rainfall'}" @click="activeMethod = 'rainfall'">Combined RRF + 降水訊號</div>
       <div class="tab" :class="{active: activeMethod === 'rulebased'}" @click="activeMethod = 'rulebased'">Rule-Based Classification</div>
     </div>
 
@@ -115,6 +116,12 @@
                 <td>推薦使用，最佳綜合表現</td>
               </tr>
               <tr>
+                <td>Combined RRF + 降水訊號</td>
+                <td><span class="badge badge-success">78.3%</span></td>
+                <td>四訊號融合，含降水相似度</td>
+                <td>降水影響導向類比</td>
+              </tr>
+              <tr>
                 <td>Rule-Based</td>
                 <td><span class="badge badge-success">79.8%</span></td>
                 <td>路徑幾何分析 + CWA 規則</td>
@@ -135,6 +142,79 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- Combined RRF + Rainfall -->
+    <div v-show="activeMethod === 'rainfall'">
+      <div class="card">
+        <div class="card-header"><h3>Combined RRF + 降水訊號（Rainfall-aware）</h3></div>
+        <p style="margin-bottom: 1.5rem;">
+          在 Combined RRF 優化版（KNN + DTW + Rule-Based）的基礎上，新增<strong>第 4 個排名信號——降水相似度</strong>。
+          依指定地區的事件降水量（event_rain），將「降水規模相近」的歷史颱風納入 RRF 排名，
+          使類比檢索可同時對齊軌跡幾何與降水影響。適用於以「降水影響」為導向的防災類比。
+        </p>
+
+        <div class="pipeline-step">
+          <div class="step-num">D</div>
+          <div class="step-content">
+            <div class="step-title">Rainfall 排名（降水量相似度）</div>
+            <div class="step-desc">
+              取得查詢颱風在指定地區的降水量 R<sub>q</sub>（既有颱風為已知值；即時預測新颱風由使用者選填「預期降水量」）。<br>
+              所有歷史颱風依 <code>|R_q − R_c|</code> 由小到大排序得到 rank_rain（無該地區降水資料者排最後）。<br>
+              <strong>地區（可擴充）：</strong> tn = 臺南（event_rain_tn）、kh = 高雄（event_rain_kh）<br>
+              <strong>RRF 權重：</strong> w_rain = 0.15（由 DTW 讓出）
+            </div>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-num">RRF</div>
+          <div class="step-content">
+            <div class="step-title">四訊號 RRF 融合公式</div>
+            <div class="step-desc">
+              <code>score(t) = α/(k+rank_knn) + w_dtw/(k+rank_dtw) + rule_weight/(k+rank_rule) + w_rain/(k+rank_rain)</code><br>
+              其中 α=0.10, rule_weight=0.40, w_rain=0.15, w_dtw = 1 − α − rule_weight − w_rain = 0.35, k=30
+            </div>
+          </div>
+        </div>
+
+        <h4>核心參數</h4>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>參數</th><th>值</th><th>說明</th></tr></thead>
+            <tbody>
+              <tr><td>alpha (w_knn)</td><td>0.10</td><td>KNN 排名權重</td></tr>
+              <tr><td>rule_weight</td><td>0.40</td><td>Rule-Based 排名權重</td></tr>
+              <tr><td>w_dtw</td><td>0.35</td><td>DTW 排名權重 (1 − 0.10 − 0.40 − 0.15)</td></tr>
+              <tr><td>w_rain</td><td>0.15</td><td>降水排名權重</td></tr>
+              <tr><td>rainfall_region</td><td>tn / kh</td><td>降水地區（臺南／高雄，可擴充）</td></tr>
+              <tr><td>rrf_k</td><td>30</td><td>RRF 平滑常數</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4 style="margin-top: 1.5rem;">評估結果（198 筆 Cat 1-9 子集，LOO）</h4>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>方法</th><th>準確率</th><th>說明</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Combined RRF 優化版（未啟用降水）</td>
+                <td><span class="badge badge-success">79.8%</span></td>
+                <td>純路徑分類最佳</td>
+              </tr>
+              <tr>
+                <td>Combined RRF + 降水訊號（tn, w=0.15）</td>
+                <td><span class="badge badge-success">78.3%</span></td>
+                <td>降水影響導向；路徑分類略降屬預期</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin-top:0.75rem;">
+          降水量為颱風影響的下游結果，納入排名會略微犧牲純路徑分類準確率，其價值在於提供「降水規模相近」的類比颱風。
+        </p>
       </div>
     </div>
 

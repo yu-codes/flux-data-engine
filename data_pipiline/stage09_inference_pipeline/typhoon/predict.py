@@ -39,6 +39,7 @@ from data_pipiline.stage05_model_training.typhoon.mapping import ImpactMapper
 from data_pipiline.stage07_model_evaluation.typhoon.metrics import (
     compute_category_accuracy,
 )
+from data_pipiline.stage00_data_ingestion.typhoon.regions import DEFAULT_REGION
 
 # 只評估有明確路徑定義的類別
 VALID_CATEGORIES = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -86,6 +87,9 @@ class DisasterImpactPipeline:
             self.rrf_k = params.get("rrf_k", 60)
             self.dtw_weights = params.get("dtw_weights")
             self.feature_weights = params.get("feature_weights")
+            self.use_rainfall = params.get("use_rainfall", False)
+            self.rainfall_region = params.get("rainfall_region", DEFAULT_REGION)
+            self.rainfall_weight = params.get("rainfall_weight", 0.15)
             self.weight_path = params.get("weight_path", 0.4)
             self.weight_category = params.get("weight_category", 0.5)
             self.weight_intensity = params.get("weight_intensity", 0.1)
@@ -103,6 +107,9 @@ class DisasterImpactPipeline:
             self.rrf_k = kwargs.get("rrf_k", 60)
             self.dtw_weights = kwargs.get("dtw_weights")
             self.feature_weights = kwargs.get("feature_weights")
+            self.use_rainfall = kwargs.get("use_rainfall", False)
+            self.rainfall_region = kwargs.get("rainfall_region", DEFAULT_REGION)
+            self.rainfall_weight = kwargs.get("rainfall_weight", 0.15)
             self.weight_path = kwargs.get("weight_path", 0.4)
             self.weight_category = kwargs.get("weight_category", 0.5)
             self.weight_intensity = kwargs.get("weight_intensity", 0.1)
@@ -127,6 +134,9 @@ class DisasterImpactPipeline:
                 "impact_radius_km": self.impact_radius_km,
                 "pool_size_factor": self.pool_size_factor,
                 "rrf_k": self.rrf_k,
+                "use_rainfall": self.use_rainfall,
+                "rainfall_region": self.rainfall_region,
+                "rainfall_weight": self.rainfall_weight,
             },
             "evaluation": {
                 "metrics": self.metrics,
@@ -138,15 +148,24 @@ class DisasterImpactPipeline:
         """取得完整配置（用於記錄）"""
         return self._config
 
-    def initialize(self, processed_dir: str = "data/typhoon/preprocessed"):
-        """載入資料並建立模型"""
+    def initialize(
+        self,
+        processed_dir: str = "data/typhoon/preprocessed",
+        dataset_filename: str = "typhoons_overview.json",
+    ):
+        """載入資料並建立模型
+
+        Args:
+            processed_dir: preprocessed 目錄
+            dataset_filename: 資料檔名（即時預測用完整 207 筆；批次評估可指定 198 筆子集）
+        """
         print("=" * 60)
         print("🌀 初始化颱風類比預測系統")
         print("=" * 60)
 
         # 1. 載入資料
         print("\n📂 載入資料...")
-        self.loader = DataLoader(processed_dir)
+        self.loader = DataLoader(processed_dir, filename=dataset_filename)
         self.loader.load()
 
         # 2. 提取特徵
@@ -183,6 +202,9 @@ class DisasterImpactPipeline:
                 dtw_weights=(np.array(self.dtw_weights) if self.dtw_weights else None),
                 pool_size_factor=self.pool_size_factor,
                 rrf_k=self.rrf_k,
+                use_rainfall=self.use_rainfall,
+                rainfall_region=self.rainfall_region,
+                rainfall_weight=self.rainfall_weight,
             )
         elif method == "rule_based":
             return RuleBasedSimilarity(
@@ -198,11 +220,13 @@ class DisasterImpactPipeline:
             return KNNSimilarity(
                 feature_weights=self.feature_weights or optimized_weights
             )
-        elif method == "combined_optimized":
+        elif method in ("combined_optimized", "combined_rainfall"):
             # 最佳 RRF 參數 + 最佳 DTW 權重 + 特徵加權 KNN
+            # combined_rainfall：在優化版基礎上強制啟用降水訊號
             optimized_fw = np.array(
                 [3.0, 2.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 2.5, 0.5, 0.5]
             )
+            use_rain = self.use_rainfall or method == "combined_rainfall"
             return CombinedSimilarity(
                 alpha=self.alpha if self.alpha != 0.2 else 0.10,
                 rule_weight=self.rule_weight if self.rule_weight != 0.5 else 0.40,
@@ -214,6 +238,9 @@ class DisasterImpactPipeline:
                 ),
                 pool_size_factor=self.pool_size_factor,
                 rrf_k=self.rrf_k if self.rrf_k != 60 else 30,
+                use_rainfall=use_rain,
+                rainfall_region=self.rainfall_region,
+                rainfall_weight=self.rainfall_weight,
             )
         elif method == "baseline":
             return BaselineSimilarity(seed=42)
@@ -222,7 +249,12 @@ class DisasterImpactPipeline:
 
     def _fit_similarity(self):
         """擬合相似度模型"""
-        if self.similarity_method in ("rule_based", "combined", "combined_optimized"):
+        if self.similarity_method in (
+            "rule_based",
+            "combined",
+            "combined_optimized",
+            "combined_rainfall",
+        ):
             self.similarity.fit(self.features, loader=self.loader)
         else:
             self.similarity.fit(self.features)

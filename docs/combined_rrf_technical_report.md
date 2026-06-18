@@ -4,6 +4,10 @@
 
 本報告描述一套基於 Reciprocal Rank Fusion (RRF) 的颱風路徑類比預測方法。該方法融合三種獨立的相似度排名信號——KNN 特徵距離排名、DTW 時序對齊排名、Rule-Based 幾何規則排名——透過 RRF 機制產生最終綜合排名，再以 Top-K 投票預測颱風侵臺路徑類型。在 198 筆具有 CWA 分類標籤的颱風上達到 **79.8% Leave-One-Out 準確率**。
 
+此外，系統提供**可選的第四個排名信號——降水相似度（Rainfall）**：當啟用 `use_rainfall` 時，依指定地區（`rainfall_region`，如 `tn`=臺南、`kh`=高雄）的事件降水量將相近降水的歷史颱風納入相似度排名，作為以「降水影響」為導向的類比檢索。關閉時行為與原三信號版本完全一致。
+
+> **資料源統一**：自本版起，全系統（loader / 相似度 / 推論 / 後端）統一讀取單一資料源 `data/typhoon/preprocessed/typhoons_overview.json`。軌跡取自 `path.position_intensity`，事件降水取自 `event_rain_tn` / `event_rain_kh`（依地區）。不再依賴舊的 `typhoons_with_tracks.json` 與 CSV 降水檔。
+
 ---
 
 ## 1. 問題定義
@@ -18,11 +22,15 @@
 **資料集**：
 | 項目 | 規格 |
 |------|------|
-| 來源 | IBTrACS + CWA 路徑分類 |
-| 筆數 | 207 筆完整軌跡，198 筆有分類 |
+| 來源 | `typhoons_overview.json`（IBTrACS 軌跡 + CWA 路徑分類 + 事件降水） |
+| 載入範圍 | 有路徑分類（1–9 或「特殊」）且具軌跡者，共 207 筆；其中 198 筆為 Cat 1–9 |
+| 軌跡欄位 | `path.position_intensity`：(timestamp_utc, latitude, longitude, wind_kt, pressure_mb) |
+| 降水欄位 | `event_rain_tn`（臺南）、`event_rain_kh`（高雄），各約 198 筆有值 |
 | 時間 | 1958–2025 |
 | 分類 | 9 類 CWA 侵臺路徑 |
-| 觀測 | 6h 間隔 (lat, lon, wind_kt, pressure_mb) |
+| 觀測 | 6h 間隔 |
+
+> 載入過濾條件 `分類非空 ∧ 具軌跡點` 與舊資料集 `typhoons_with_tracks.json` 的 207 筆評估池完全一致，故 79.8% 基準維持不變。
 
 ---
 
@@ -31,7 +39,7 @@
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │  Feature        │     │  Similarity     │     │  Prediction     │
-│  Extraction     │ ──→ │  Engine (×3)    │ ──→ │  (Top-K Vote)   │
+│  Extraction     │ ──→ │ Engine (×3 +R)  │ ──→ │  (Top-K Vote)   │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
         │                       │
         ▼                       ▼
@@ -127,20 +135,35 @@ $$D(i, j) = d(\mathbf{x}_i, \mathbf{y}_j) + \min \begin{cases} D(i-1, j) \\ D(i,
 
 **效果**：強制 RRF 傾向選擇路徑型態相同的歷史颱風，形成一種「先驗篩選」。
 
+### 3.4 Signal D: Rainfall 排名（可選，降水影響相似度）
+
+**動機**：路徑分類聚焦於軌跡幾何，但實務防災更關心「降水影響」。本信號將指定地區的事件降水量作為相似度的一個輸入維度，使類比檢索可同時對齊「降水規模相近」的歷史颱風。
+
+**啟用方式**：`use_rainfall=True`，並以 `rainfall_region` 指定地區。地區對應由 stage00 的 `RAINFALL_REGIONS` 集中定義，目前支援 `tn`（臺南，對應 `event_rain_tn`）、`kh`（高雄，對應 `event_rain_kh`），新增地區僅需在該設定加入一筆即可，全系統自動沿用。
+
+**排名邏輯**：
+1. 取得查詢颱風在該地區的降水量 $R_q$（評估／既有颱風為已知值；前端新颱風則由使用者選填「預期降水量」）
+2. 所有歷史颱風依 $|R_q - R_c|$ 由小到大排序得到 $\text{rank}_{\text{rain}}(c)$
+3. 無該地區降水資料者排於最後
+
+**降級行為**：若未提供查詢降水量（如前端未填預期降水），降水項自動略過，權重回歸至 DTW，結果等同未啟用降水。
+
 ---
 
 ## 4. RRF 融合
 
 ### 4.1 Reciprocal Rank Fusion 公式
 
-$$\text{score}(c) = \frac{\alpha}{k + \text{rank}_{\text{KNN}}(c)} + \frac{w_{\text{DTW}}}{k + \text{rank}_{\text{DTW}}(c)} + \frac{w_{\text{rule}}}{k + \text{rank}_{\text{rule}}(c)}$$
+$$\text{score}(c) = \frac{\alpha}{k + \text{rank}_{\text{KNN}}(c)} + \frac{w_{\text{DTW}}}{k + \text{rank}_{\text{DTW}}(c)} + \frac{w_{\text{rule}}}{k + \text{rank}_{\text{rule}}(c)} + \underbrace{\frac{w_{\text{rain}}}{k + \text{rank}_{\text{rain}}(c)}}_{\text{僅 use\_rainfall=True}}$$
 
 其中：
 - $\alpha = 0.10$（KNN 權重）
-- $w_{\text{DTW}} = 0.50$（DTW 權重）
 - $w_{\text{rule}} = 0.40$（Rule-Based 權重）
+- $w_{\text{rain}}$（Rainfall 權重，預設 0.15；`use_rainfall=False` 時為 0）
+- $w_{\text{DTW}} = 1 - \alpha - w_{\text{rule}} - w_{\text{rain}}$（剩餘配給 DTW）
 - $k = 30$（平滑常數）
-- $\alpha + w_{\text{DTW}} + w_{\text{rule}} = 1.0$
+
+當 `use_rainfall=False` 時 $w_{\text{rain}}=0$、$w_{\text{DTW}}=0.50$，公式退化為原三信號版本（與 79.8% 基準完全相同）。啟用降水時，DTW 權重讓出 $w_{\text{rain}}$ 給降水信號。
 
 ### 4.2 RRF 的設計考量
 
@@ -274,6 +297,19 @@ Step 4: Top-K 投票
 
 優化版將 Rule-Based 權重從 0.25 提升至 0.40，反映其在路徑分類上的核心貢獻。
 
+### 7.4 降水信號對路徑分類的影響
+
+啟用降水信號後，類比檢索會傾向選擇「降水規模相近」的颱風。由於降水量是颱風影響的**下游結果**而非軌跡幾何信號，將其納入會略微犧牲純路徑分類準確率（屬預期現象）——其價值在於提供以降水影響為導向的類比，而非提升分類準確率：
+
+| 設定 | 地區 | $w_{\text{rain}}$ | LOO 準確率 |
+|------|------|------|------|
+| 關閉（基準） | — | 0 | 79.8% (158/198) |
+| 啟用 | tn（臺南） | 0.15 | 78.3% (155/198) |
+| 啟用 | tn（臺南） | 0.30 | 77.3% (153/198) |
+| 啟用 | kh（高雄） | 0.15 | 77.3% (153/198) |
+
+**使用建議**：若任務目標為路徑分類，維持 `use_rainfall=False`；若目標為「找出降水影響相近的歷史颱風」，則啟用降水信號並以較小權重（0.15）平衡幾何與降水。
+
 ---
 
 ## 8. 局限性與未來方向
@@ -301,6 +337,9 @@ Step 4: Top-K 投票
 | RRF | rule_weight | 0.40 | 網格搜索 |
 | RRF | w_dtw | 0.50 | 1 - α - rule_weight |
 | RRF | rrf_k | 30 | 網格搜索 |
+| RRF | use_rainfall | False | 是否啟用降水信號 |
+| RRF | rainfall_region | tn | 降水地區（tn/kh，可擴充） |
+| RRF | rainfall_weight | 0.15 | 啟用時的降水信號權重 |
 | DTW | 維度權重 [r, θ, w, p] | [1.0, 0.5, 1.0, 0.5] | 網格搜索 |
 | DTW | Sakoe-Chiba band | 30% | 經驗設定 |
 | DTW | 標準化因子 | [300, π, 100, 50] | 物理量綱 |
