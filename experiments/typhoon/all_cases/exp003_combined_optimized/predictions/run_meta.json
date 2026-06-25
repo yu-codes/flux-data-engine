@@ -1,5 +1,5 @@
 {
-  "timestamp": "20260527_105726",
+  "timestamp": "20260622_173525",
   "experiment": "exp003_combined_optimized",
   "config_source": "experiments/typhoon/all_cases/exp003_combined_optimized/run.py",
   "method": "combined_optimized",
@@ -33,14 +33,14 @@
     ]
   },
   "results": {
-    "accuracy": 0.798,
+    "accuracy": 0.7879,
     "total": 198,
-    "correct": 158,
+    "correct": 156,
     "per_category": {
       "3": {
         "total": 30,
-        "correct": 24,
-        "accuracy": 0.8
+        "correct": 25,
+        "accuracy": 0.8333333333333334
       },
       "1": {
         "total": 23,
@@ -49,23 +49,23 @@
       },
       "5": {
         "total": 30,
-        "correct": 29,
-        "accuracy": 0.9666666666666667
-      },
-      "8": {
-        "total": 6,
-        "correct": 3,
-        "accuracy": 0.5
-      },
-      "6": {
-        "total": 30,
         "correct": 28,
         "accuracy": 0.9333333333333333
       },
+      "8": {
+        "total": 6,
+        "correct": 2,
+        "accuracy": 0.3333333333333333
+      },
+      "6": {
+        "total": 30,
+        "correct": 26,
+        "accuracy": 0.8666666666666667
+      },
       "9": {
         "total": 18,
-        "correct": 2,
-        "accuracy": 0.1111111111111111
+        "correct": 3,
+        "accuracy": 0.16666666666666666
       },
       "2": {
         "total": 29,
@@ -74,26 +74,26 @@
       },
       "4": {
         "total": 21,
-        "correct": 18,
-        "accuracy": 0.8571428571428571
+        "correct": 16,
+        "accuracy": 0.7619047619047619
       },
       "7": {
         "total": 11,
-        "correct": 6,
-        "accuracy": 0.5454545454545454
+        "correct": 8,
+        "accuracy": 0.7272727272727273
       }
     }
   },
   "rainfall": {
     "overall_mae": {
-      "臺南": 86.37848404255321,
-      "高雄": 115.39162234042553
+      "tn": 72.21148148148147,
+      "kh": 91.84145502645501
     },
     "overall_rmse": {
-      "臺南": 117.79289830612194,
-      "高雄": 147.2127189778668
+      "tn": 101.19950183389525,
+      "kh": 133.1082805368876
     },
     "count": 198,
-    "total_with_data": 188
+    "total_with_data": 189
   }
 }

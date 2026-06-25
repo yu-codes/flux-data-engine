@@ -9,7 +9,12 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from backend.state import app_state, SUPPORTED_METHODS
+from backend.state import app_state, SUPPORTED_METHODS, DEFAULT_BUFFER_KM
+from data_pipiline.stage00_data_ingestion.typhoon import coastline as coast
+from data_pipiline.stage05_model_training.typhoon.similarity.coastline import (
+    path_offset_km,
+    SCORE_TAU_KM,
+)
 from data_pipiline.stage04_feature_engineering.typhoon.extractor import (
     TyphoonFeatureExtractor,
 )
@@ -50,11 +55,19 @@ class PredictRequest(BaseModel):
     alpha: float | None = None
     rule_weight: float | None = None
     rrf_k: int | None = None
+    # 海岸線外擴緩衝半徑 (km) — coastline 方法用
+    buffer_km: float | None = Field(default=None, ge=50, le=2000)
     # 降水相關
     use_rainfall: bool = False
     rainfall_region: str = "tn"
     rainfall_weight: float | None = None
     expected_rainfall: float | None = None  # 查詢颱風預期降水量（啟用降水訊號時可選）
+
+
+class TrackCoord(BaseModel):
+    lat: float
+    lon: float
+    in_range: bool = True  # 是否落在計算範圍（海岸線外擴 buffer_km）內
 
 
 class SimilarTyphoon(BaseModel):
@@ -65,6 +78,8 @@ class SimilarTyphoon(BaseModel):
     category: str
     distance: float
     score: float
+    # 完整軌跡（供地圖投影繪製）
+    track: list[TrackCoord] = []
 
 
 class RainfallStation(BaseModel):
@@ -91,6 +106,12 @@ class PredictResponse(BaseModel):
     similar_typhoons: list[SimilarTyphoon]
     rainfall: RainfallInfo | None = None
     charts: list[str] = []
+    # 地圖投影資料
+    query_track: list[TrackCoord] = []
+    coastline: list[TrackCoord] = []
+    buffer: list[TrackCoord] = []
+    buffer_km: float | None = None
+    distance_unit: str = "score"  # coastline 方法為 "km"
 
 
 class RunMeta(BaseModel):
@@ -113,7 +134,7 @@ def predict(req: PredictRequest):
     if not pipeline:
         raise HTTPException(503, f"Model '{req.method}' not loaded")
 
-    rainfall_in_use = req.use_rainfall or req.method == "combined_rainfall"
+    rainfall_in_use = req.use_rainfall
     if rainfall_in_use and req.rainfall_region not in RAINFALL_REGIONS:
         raise HTTPException(
             400,
@@ -127,30 +148,85 @@ def predict(req: PredictRequest):
             "2000-01-01", periods=len(track_df), freq="6h"
         )
 
+    # 計算範圍（海岸線外擴 buffer_km）— 所有方法共用；改變才重算參考特徵
+    buffer_km = req.buffer_km if req.buffer_km is not None else pipeline.buffer_km
+    pipeline.set_buffer_km(buffer_km)
+
     # 預測
+    distance_unit = "score"
     if req.method == "rule_based":
-        rule_result = classify_typhoon_by_rules(track_df, landfall_location=None)
+        rule_result = classify_typhoon_by_rules(
+            track_df, landfall_location=None, buffer_km=buffer_km
+        )
         predicted_cat = rule_result["predicted_category"]
         confidence = rule_result["confidence"]
         category_votes = {predicted_cat: 1.0}
 
-        extractor = TyphoonFeatureExtractor()
+        extractor = TyphoonFeatureExtractor(buffer_km=buffer_km)
         query_features = extractor.extract(typhoon_id="query", track=track_df)
         knn_sim = KNNSimilarity()
         knn_sim.fit(pipeline.features)
         sim_result = knn_sim.find_similar_by_vector(
             query_features.to_feature_vector(), k=req.k
         )
+    elif req.method == "coastline":
+        # 海岸線範圍內絕對位置相似度 — distances 以 km 表示
+        distance_unit = "km"
+        try:
+            sim_result = pipeline.similarity.find_similar_by_track(
+                track_df, k=req.k, buffer_km=buffer_km
+            )
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        # 以正規化距離（1 - score）做類比投票，避免 km 量級導致 exp(-d) 下溢
+        norm_dists = [1.0 - s for s in sim_result.scores]
+        pred = pipeline.model.predict(
+            query_id="query",
+            similar_ids=sim_result.similar_ids,
+            distances=norm_dists,
+        )
+        predicted_cat = pred.get("predicted_category")
+        confidence = pred.get("confidence", 0.0)
+        category_votes = pred.get("category_votes", {})
+    elif req.method == "coastline_rrf":
+        # 絕對位置（主）+ KNN + 降水（可選）RRF 融合
+        extractor = TyphoonFeatureExtractor(buffer_km=buffer_km)
+        query_features = extractor.extract(typhoon_id="query", track=track_df)
+        query_vec = query_features.to_feature_vector()
+        use_rain = req.use_rainfall
+        if hasattr(pipeline.similarity, "configure_rainfall"):
+            pipeline.similarity.configure_rainfall(
+                use_rainfall=use_rain,
+                region=req.rainfall_region,
+                weight=req.rainfall_weight if req.rainfall_weight is not None else 0.08,
+            )
+        track_kwargs = {"k": req.k, "buffer_km": buffer_km}
+        if use_rain and req.expected_rainfall is not None:
+            track_kwargs["query_rainfall"] = req.expected_rainfall
+        try:
+            sim_result = pipeline.similarity.find_similar_by_track(
+                track_df, query_vec, **track_kwargs
+            )
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        pred = pipeline.model.predict(
+            query_id="query",
+            similar_ids=sim_result.similar_ids,
+            distances=sim_result.distances,
+        )
+        predicted_cat = pred.get("predicted_category")
+        confidence = pred.get("confidence", 0.0)
+        category_votes = pred.get("category_votes", {})
     else:
-        extractor = TyphoonFeatureExtractor()
+        extractor = TyphoonFeatureExtractor(buffer_km=buffer_km)
         query_features = extractor.extract(typhoon_id="query", track=track_df)
         query_vec = query_features.to_feature_vector()
 
         sim_kwargs = {"k": req.k}
-        if req.method in ("combined", "combined_optimized", "combined_rainfall"):
+        if req.method == "combined_rainfall":
             sim_kwargs["query_features"] = query_features
-            # combined_rainfall 預設啟用降水訊號；其他 combined 方法依請求
-            use_rain = req.use_rainfall or req.method == "combined_rainfall"
+            # 降水訊號由前端 toggle 控制（use_rainfall）
+            use_rain = req.use_rainfall
             # 逐請求設定降水訊號
             if hasattr(pipeline.similarity, "configure_rainfall"):
                 pipeline.similarity.configure_rainfall(
@@ -170,12 +246,20 @@ def predict(req: PredictRequest):
         confidence = pred.get("confidence", 0.0)
         category_votes = pred.get("category_votes", {})
 
-    # 相似颱風
+    # 相似颱風：距離 / 相似度一律用「與查詢路徑的平均偏離 (km)」這個絕對指標，
+    # 不再用各方法的相對正規化分數（避免排名第 1 永遠是 0km / 100%）。
+    # 排名仍由各方法的演算法決定；此處只是更合理地呈現「有多接近」。
     similar_info = []
-    for tid, dist, score in zip(
-        sim_result.similar_ids, sim_result.distances, sim_result.scores
-    ):
+    for tid in sim_result.similar_ids:
         rec = pipeline.loader.get(tid)
+        offset = path_offset_km(
+            track_df["longitude"].values,
+            track_df["latitude"].values,
+            rec.track["longitude"].values,
+            rec.track["latitude"].values,
+            buffer_km,
+        )
+        similarity = float(np.exp(-offset / SCORE_TAU_KM)) if np.isfinite(offset) else 0.0
         similar_info.append(
             SimilarTyphoon(
                 typhoon_id=tid,
@@ -183,10 +267,12 @@ def predict(req: PredictRequest):
                 name_en=rec.name_en,
                 year=rec.year,
                 category=rec.taiwan_track_category or "?",
-                distance=round(dist, 4),
-                score=round(score, 4),
+                distance=round(float(offset), 1),
+                score=round(similarity, 4),
+                track=_track_coords(rec.track, buffer_km=buffer_km),
             )
         )
+    distance_unit = "km"  # 所有方法的顯示距離皆為「平均偏離 (km)」
 
     # 降水分析（各地區，依類比颱風推估）
     rainfall_result = None
@@ -275,6 +361,10 @@ def predict(req: PredictRequest):
     except Exception:
         pass
 
+    # 地圖投影資料（海岸線輪廓 + 外擴緩衝 + 查詢路徑）— buffer 即實際計算範圍
+    coastline_coords = [TrackCoord(**p) for p in coast.outline_lonlat()]
+    buffer_coords = [TrackCoord(**p) for p in coast.buffer_polygon(buffer_km)]
+
     return PredictResponse(
         method=req.method,
         predicted_category=predicted_cat,
@@ -283,7 +373,25 @@ def predict(req: PredictRequest):
         similar_typhoons=similar_info,
         rainfall=rainfall_result,
         charts=chart_urls,
+        query_track=_track_coords(track_df, buffer_km=buffer_km),
+        coastline=coastline_coords,
+        buffer=buffer_coords,
+        buffer_km=round(buffer_km, 1),
+        distance_unit=distance_unit,
     )
+
+
+# === 海岸線 / 緩衝區端點 ===
+@router.get("/coastline")
+def get_coastline(buffer_km: float = DEFAULT_BUFFER_KM):
+    """取得台灣海岸線輪廓與外擴 buffer_km 的緩衝區多邊形（供前端地圖投影）"""
+    if not (50 <= buffer_km <= 2000):
+        raise HTTPException(400, "buffer_km must be between 50 and 2000")
+    return {
+        "buffer_km": round(buffer_km, 1),
+        "coastline": coast.outline_lonlat(),
+        "buffer": coast.buffer_polygon(buffer_km),
+    }
 
 
 # === 實驗歷史端點 ===
@@ -382,6 +490,29 @@ def get_run_detail(run_id: str):
 
 
 # === 輔助函式 ===
+def _track_coords(
+    track_df: pd.DataFrame, buffer_km: float | None = None
+) -> list[TrackCoord]:
+    """將軌跡 DataFrame 轉為 [{lat, lon, in_range}, ...]（供地圖投影）
+
+    buffer_km 提供時，標記各點是否落在計算範圍（海岸線外擴 buffer_km）內，
+    讓地圖可凸顯實際參與計算的路徑段。
+    """
+    lats = track_df["latitude"].values
+    lons = track_df["longitude"].values
+    valid = pd.notna(lats) & pd.notna(lons)
+    lats = lats[valid].astype(float)
+    lons = lons[valid].astype(float)
+    if buffer_km is not None and len(lats):
+        in_range = coast.distances_to_coast_km(lons, lats) <= buffer_km
+    else:
+        in_range = np.ones(len(lats), dtype=bool)
+    return [
+        TrackCoord(lat=round(float(la), 4), lon=round(float(lo), 4), in_range=bool(ir))
+        for la, lo, ir in zip(lats, lons, in_range)
+    ]
+
+
 def _load_run_meta(run_dir: Path) -> dict:
     meta_path = run_dir / "run_meta.json"
     if meta_path.exists():

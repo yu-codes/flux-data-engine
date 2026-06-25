@@ -173,8 +173,19 @@ class TyphoonFeatureExtractor:
     5. 迎風面 rain proxy
     """
 
-    def __init__(self, impact_radius_km: float = IMPACT_WINDOW_RADIUS_KM):
+    def __init__(
+        self,
+        impact_radius_km: float = IMPACT_WINDOW_RADIUS_KM,
+        buffer_km: float | None = None,
+    ):
+        """
+        Args:
+            impact_radius_km: 舊版 impact window（到台灣中心距離）半徑
+            buffer_km: 若提供，改用「到海岸線距離 ≤ buffer_km」框 impact window
+                       （與 coastline 方法一致的計算範圍）；None 則沿用中心距離窗
+        """
         self.impact_radius_km = impact_radius_km
+        self.buffer_km = buffer_km
 
     def extract(
         self,
@@ -198,6 +209,19 @@ class TyphoonFeatureExtractor:
         """
         track = track.copy()
 
+        # --- Step 0: 先把整條路徑裁切到計算範圍內 ---
+        # buffer_km 設定時：只保留「到海岸線距離 ≤ buffer_km」的點，
+        # 之後所有特徵（含 min_distance / max_wind / 路徑 / DTW）皆只在範圍內計算。
+        if self.buffer_km is not None:
+            from data_pipiline.stage00_data_ingestion.typhoon.coastline import clip_mask
+
+            keep = clip_mask(
+                track["longitude"].values.astype(float),
+                track["latitude"].values.astype(float),
+                self.buffer_km,
+            )
+            track = track[keep].reset_index(drop=True)
+
         # --- Step 1: 空間標準化（修正座標 → 極座標）---
         lats = track["latitude"].values.astype(float)
         lons = track["longitude"].values.astype(float)
@@ -212,13 +236,17 @@ class TyphoonFeatureExtractor:
         winds = track["wind_kt"].fillna(0).values.astype(float)
         pressures = track["pressure_mb"].fillna(1013).values.astype(float)
 
-        # --- Step 2: 提取 Impact Window (r < 300km) ---
-        in_window = r < self.impact_radius_km
-        if in_window.sum() < 2:
-            # 如果路徑沒有進入 300km 範圍，取最近的 5 個點
-            nearest_indices = np.argsort(r)[: max(5, len(r) // 5)]
-            in_window = np.zeros(len(r), dtype=bool)
-            in_window[nearest_indices] = True
+        # --- Step 2: 提取 Impact Window ---
+        if self.buffer_km is not None:
+            # 已整條裁切到範圍內 → 全部點都納入
+            in_window = np.ones(len(r), dtype=bool)
+        else:
+            # 舊版：以「到台灣中心距離 < impact_radius_km」框 window
+            in_window = r < self.impact_radius_km
+            if in_window.sum() < 2:
+                nearest_indices = np.argsort(r)[: max(5, len(r) // 5)]
+                in_window = np.zeros(len(r), dtype=bool)
+                in_window[nearest_indices] = True
 
         window_r = r[in_window]
         window_theta = theta[in_window]
@@ -266,9 +294,15 @@ class TyphoonFeatureExtractor:
             landfall_location
         ).strip() not in ("", "---", "nan", "None")
 
-        # 生成位置
-        _birth_lon = birth_lon if birth_lon is not None else float(lons[0])
-        _birth_lat = birth_lat if birth_lat is not None else float(lats[0])
+        # 生成位置 / 進入範圍位置
+        # buffer 模式：路徑已裁切，用範圍內「進入點」作為起始位置（維持只在範圍內計算）
+        # 舊版：優先用傳入的真實生成位置
+        if self.buffer_km is not None:
+            _birth_lon = float(lons[0])
+            _birth_lat = float(lats[0])
+        else:
+            _birth_lon = birth_lon if birth_lon is not None else float(lons[0])
+            _birth_lat = birth_lat if birth_lat is not None else float(lats[0])
 
         return TyphoonFeatures(
             typhoon_id=typhoon_id,
@@ -309,9 +343,12 @@ class TyphoonFeatureExtractor:
                 landfall_location=rec.landfall_location,
             )
             features[rec.typhoon_id] = feat
-        print(
-            f"✓ 已提取 {len(features)} 筆颱風特徵（impact window={self.impact_radius_km}km）"
+        window_desc = (
+            f"海岸線外擴 {self.buffer_km}km"
+            if self.buffer_km is not None
+            else f"中心距離 {self.impact_radius_km}km"
         )
+        print(f"✓ 已提取 {len(features)} 筆颱風特徵（計算範圍：{window_desc}）")
         return features
 
     # ---- 內部計算方法 ----

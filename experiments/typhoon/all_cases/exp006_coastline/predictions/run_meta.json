@@ -1,0 +1,76 @@
+{
+  "timestamp": "20260622_173657",
+  "experiment": "exp006_coastline",
+  "config_source": "experiments/typhoon/all_cases/exp006_coastline/run.py",
+  "method": "coastline",
+  "hazard": "typhoon",
+  "parameters": {
+    "buffer_km": 500.0,
+    "k": 5,
+    "impact_radius_km": 500.0
+  },
+  "results": {
+    "accuracy": 0.7323,
+    "total": 198,
+    "correct": 145,
+    "per_category": {
+      "3": {
+        "total": 30,
+        "correct": 23,
+        "accuracy": 0.7666666666666667
+      },
+      "1": {
+        "total": 23,
+        "correct": 18,
+        "accuracy": 0.782608695652174
+      },
+      "5": {
+        "total": 30,
+        "correct": 27,
+        "accuracy": 0.9
+      },
+      "8": {
+        "total": 6,
+        "correct": 0,
+        "accuracy": 0.0
+      },
+      "6": {
+        "total": 30,
+        "correct": 27,
+        "accuracy": 0.9
+      },
+      "9": {
+        "total": 18,
+        "correct": 14,
+        "accuracy": 0.7777777777777778
+      },
+      "2": {
+        "total": 29,
+        "correct": 21,
+        "accuracy": 0.7241379310344828
+      },
+      "4": {
+        "total": 21,
+        "correct": 11,
+        "accuracy": 0.5238095238095238
+      },
+      "7": {
+        "total": 11,
+        "correct": 4,
+        "accuracy": 0.36363636363636365
+      }
+    }
+  },
+  "rainfall": {
+    "overall_mae": {
+      "tn": 78.44858906525575,
+      "kh": 94.28946208112876
+    },
+    "overall_rmse": {
+      "tn": 105.10029187357492,
+      "kh": 133.06264069917722
+    },
+    "count": 198,
+    "total_with_data": 189
+  }
+}

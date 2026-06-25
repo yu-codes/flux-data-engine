@@ -1,0 +1,32 @@
+{
+  "name": "exp007_coastline_rrf",
+  "description": "Coastline RRF 融合：絕對位置(0.80) + KNN(0.20) + 可選降水，RRF rrf_k=60，緩衝 500km",
+  "method": "coastline_rrf",
+  "parameters": {
+    "buffer_km": 500.0,
+    "weight_coastline": 0.8,
+    "weight_knn": 0.2,
+    "rrf_k": 60,
+    "pool_size_factor": 12,
+    "k": 5,
+    "impact_radius_km": 500.0
+  },
+  "evaluation": {
+    "metrics": [
+      "category_accuracy",
+      "rainfall_analysis"
+    ],
+    "leave_one_out": true,
+    "categories": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9"
+    ]
+  }
+}

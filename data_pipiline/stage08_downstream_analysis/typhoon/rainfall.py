@@ -360,9 +360,10 @@ class RainfallAnalyzer:
 
             bp = ax.boxplot(
                 [cat_data[c] for c in valid_cats],
-                labels=[f"Cat {c}" for c in valid_cats],
                 patch_artist=True,
             )
+            # 跨 matplotlib 版本相容（3.9 起 boxplot 的 labels 改名為 tick_labels）
+            ax.set_xticklabels([f"Cat {c}" for c in valid_cats])
             for patch, color in zip(bp["boxes"], colors):
                 patch.set_facecolor(color)
                 patch.set_alpha(0.5)

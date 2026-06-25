@@ -1,0 +1,26 @@
+description: Coastline RRF 融合：絕對位置(0.80) + KNN(0.20) + 可選降水，RRF rrf_k=60，緩衝 500km
+evaluation:
+  categories:
+  - '1'
+  - '2'
+  - '3'
+  - '4'
+  - '5'
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  leave_one_out: true
+  metrics:
+  - category_accuracy
+  - rainfall_analysis
+method: coastline_rrf
+name: exp007_coastline_rrf
+parameters:
+  buffer_km: 500.0
+  impact_radius_km: 500.0
+  k: 5
+  pool_size_factor: 12
+  rrf_k: 60
+  weight_coastline: 0.8
+  weight_knn: 0.2

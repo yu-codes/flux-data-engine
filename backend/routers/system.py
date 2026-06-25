@@ -22,16 +22,22 @@ def list_methods():
     return {
         "methods": [
             {
-                "id": "combined_optimized",
-                "name": "Combined RRF 優化版",
-                "description": "融合 KNN + DTW + Rule-Based，使用最佳化參數 (α=0.1, Rule=0.4, DTW=0.5, rrf_k=30)",
-                "accuracy": "79.8%",
+                "id": "coastline_rrf",
+                "name": "海岸線 RRF 融合（絕對位置＋KNN＋降水）",
+                "description": "以絕對位置相似度為主（權重 0.8），用 RRF 融合 KNN 排名與可選的降水排名做三訊號投票；計算範圍同為海岸線外擴 buffer_km。準確率最高。",
+                "accuracy": "82.3%",
             },
             {
-                "id": "combined",
-                "name": "Combined RRF 原版",
-                "description": "融合 KNN + DTW + Rule-Based，使用預設參數 (α=0.13, Rule=0.25, rrf_k=60)",
-                "accuracy": "74.7%",
+                "id": "coastline",
+                "name": "海岸線範圍 絕對位置相似度",
+                "description": "將台灣海岸線向外擴張 n km，只在此範圍內以絕對經緯度位置比對路徑曲線（Chamfer 距離），找出地圖上最貼近的歷史颱風",
+                "accuracy": "73.2%",
+            },
+            {
+                "id": "combined_rainfall",
+                "name": "Combined RRF（可選降水訊號）",
+                "description": "融合 KNN + DTW + Rule-Based 最佳化參數 (α=0.1, Rule=0.4, DTW=0.5, rrf_k=30)，可選擇納入事件降水相似度",
+                "accuracy": "79.8%",
             },
             {
                 "id": "knn_optimized",
@@ -45,5 +51,6 @@ def list_methods():
                 "description": "基於路徑幾何特徵的規則式分類器",
                 "accuracy": "79.8%",
             },
-        ]
+        ],
+        "note": "所有方法皆可設定『海岸線外擴 buffer_km』作為計算範圍（預設 500km）。",
     }

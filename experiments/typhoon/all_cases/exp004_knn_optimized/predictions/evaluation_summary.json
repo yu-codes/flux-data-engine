@@ -1,13 +1,13 @@
 {
   "method": "knn_optimized",
-  "accuracy": 0.6364,
+  "accuracy": 0.6616,
   "total": 198,
-  "correct": 126,
+  "correct": 131,
   "per_category": {
     "3": {
       "total": 30,
-      "correct": 22,
-      "accuracy": 0.7333333333333333
+      "correct": 21,
+      "accuracy": 0.7
     },
     "1": {
       "total": 23,
@@ -16,8 +16,8 @@
     },
     "5": {
       "total": 30,
-      "correct": 29,
-      "accuracy": 0.9666666666666667
+      "correct": 30,
+      "accuracy": 1.0
     },
     "8": {
       "total": 6,
@@ -26,13 +26,13 @@
     },
     "6": {
       "total": 30,
-      "correct": 16,
-      "accuracy": 0.5333333333333333
+      "correct": 17,
+      "accuracy": 0.5666666666666667
     },
     "9": {
       "total": 18,
-      "correct": 0,
-      "accuracy": 0.0
+      "correct": 4,
+      "accuracy": 0.2222222222222222
     },
     "2": {
       "total": 29,

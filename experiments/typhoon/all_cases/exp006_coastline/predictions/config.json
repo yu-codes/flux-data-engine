@@ -1,0 +1,28 @@
+{
+  "name": "exp006_coastline",
+  "description": "Coastline 絕對位置相似度：海岸線外擴 500km 範圍內，以絕對經緯度位置比對路徑曲線（Chamfer 距離）",
+  "method": "coastline",
+  "parameters": {
+    "buffer_km": 500.0,
+    "k": 5,
+    "impact_radius_km": 500.0
+  },
+  "evaluation": {
+    "metrics": [
+      "category_accuracy",
+      "rainfall_analysis"
+    ],
+    "leave_one_out": true,
+    "categories": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9"
+    ]
+  }
+}

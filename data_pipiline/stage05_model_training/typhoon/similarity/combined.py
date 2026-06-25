@@ -43,11 +43,13 @@ class CombinedSimilarity(SimilarityBase):
         use_rainfall: bool = False,
         rainfall_region: str = DEFAULT_REGION,
         rainfall_weight: float = 0.15,
+        buffer_km: float | None = None,
     ):
         self.alpha = alpha
         self.rule_weight = rule_weight
         self.pool_size_factor = pool_size_factor
         self.rrf_k = rrf_k
+        self.buffer_km = buffer_km
         self.use_rainfall = use_rainfall
         self.rainfall_region = rainfall_region
         self.rainfall_weight = rainfall_weight if use_rainfall else 0.0
@@ -70,7 +72,9 @@ class CombinedSimilarity(SimilarityBase):
         if self._loader:
             for tid in self._ids:
                 rec = self._loader.get(tid)
-                result = classify_typhoon_by_rules(rec.track, rec.landfall_location)
+                result = classify_typhoon_by_rules(
+                    rec.track, rec.landfall_location, buffer_km=self.buffer_km
+                )
                 self._rule_categories[tid] = result["predicted_category"]
                 self._rainfall[tid] = rec.get_rainfall(self.rainfall_region)
 

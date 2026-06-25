@@ -34,6 +34,12 @@ from data_pipiline.stage05_model_training.typhoon.similarity.baseline import (
 from data_pipiline.stage05_model_training.typhoon.similarity.rule_based import (
     RuleBasedSimilarity,
 )
+from data_pipiline.stage05_model_training.typhoon.similarity.coastline import (
+    CoastlineSimilarity,
+)
+from data_pipiline.stage05_model_training.typhoon.similarity.coastline_rrf import (
+    CoastlineRRFSimilarity,
+)
 from data_pipiline.stage05_model_training.typhoon.analog import AnalogModel
 from data_pipiline.stage05_model_training.typhoon.mapping import ImpactMapper
 from data_pipiline.stage07_model_evaluation.typhoon.metrics import (
@@ -93,6 +99,11 @@ class DisasterImpactPipeline:
             self.weight_path = params.get("weight_path", 0.4)
             self.weight_category = params.get("weight_category", 0.5)
             self.weight_intensity = params.get("weight_intensity", 0.1)
+            self.buffer_km = params.get("buffer_km", 500.0)
+            # coastline_rrf 專屬權重（絕對位置為主）
+            self.weight_coastline = params.get("weight_coastline", 0.80)
+            self.weight_knn = params.get("weight_knn", 0.20)
+            self.weight_rainfall_rrf = params.get("weight_rainfall_rrf", 0.08)
             eval_cfg = config.get("evaluation", {})
             self.valid_categories = eval_cfg.get("categories", VALID_CATEGORIES)
             self.metrics = eval_cfg.get("metrics", ["category_accuracy"])
@@ -113,16 +124,24 @@ class DisasterImpactPipeline:
             self.weight_path = kwargs.get("weight_path", 0.4)
             self.weight_category = kwargs.get("weight_category", 0.5)
             self.weight_intensity = kwargs.get("weight_intensity", 0.1)
+            self.buffer_km = kwargs.get("buffer_km", 500.0)
+            self.weight_coastline = kwargs.get("weight_coastline", 0.80)
+            self.weight_knn = kwargs.get("weight_knn", 0.20)
+            self.weight_rainfall_rrf = kwargs.get("weight_rainfall_rrf", 0.08)
             self.valid_categories = VALID_CATEGORIES
             self.metrics = ["category_accuracy"]
             self._config = self._build_config()
 
         self.loader: DataLoader | None = None
-        self.extractor = TyphoonFeatureExtractor(impact_radius_km=self.impact_radius_km)
+        # 計算範圍統一以「海岸線外擴 buffer_km」框 impact window（所有方法共用）
+        self.extractor = TyphoonFeatureExtractor(
+            impact_radius_km=self.impact_radius_km, buffer_km=self.buffer_km
+        )
         self.similarity: SimilarityBase | None = None
         self.model: AnalogModel | None = None
         self.features: dict[str, TyphoonFeatures] = {}
         self.label_dict: dict[str, str] = {}
+        self._fitted_buffer_km: float | None = None  # 目前已擬合的 buffer（快取用）
 
     def _build_config(self) -> dict:
         """從屬性建構 config dict"""
@@ -183,7 +202,35 @@ class DisasterImpactPipeline:
         # 5. 建立預測模型
         self.model = AnalogModel(label_dict=self.label_dict)
 
+        self._fitted_buffer_km = self.buffer_km
         print(f"\n✅ 系統初始化完成（方法={self.similarity_method}）")
+
+    def set_buffer_km(self, buffer_km: float):
+        """
+        調整計算範圍（海岸線外擴 buffer_km）。
+
+        - 與目前已擬合的 buffer 相同 → 直接沿用快取（即時）
+        - 不同 → 重新擷取參考特徵 + 重新擬合相似度（約數秒）
+        - coastline 方法：僅需更新 similarity 的 buffer（重新裁切，便宜）
+        """
+        if buffer_km == self._fitted_buffer_km:
+            return
+        self.buffer_km = buffer_km
+
+        if self.similarity_method == "coastline":
+            self.similarity.buffer_km = buffer_km
+            self._fitted_buffer_km = buffer_km
+            return
+
+        # 其他方法：impact window 由海岸線 buffer 決定 → 重新擷取 + 擬合
+        self.extractor = TyphoonFeatureExtractor(
+            impact_radius_km=self.impact_radius_km, buffer_km=buffer_km
+        )
+        self.features = self.extractor.extract_all(self.loader)
+        self.similarity = self._create_similarity()
+        self._fit_similarity()
+        self.model = AnalogModel(label_dict=self.label_dict)
+        self._fitted_buffer_km = buffer_km
 
     def _create_similarity(self) -> SimilarityBase:
         """根據配置建立相似度計算器"""
@@ -205,12 +252,14 @@ class DisasterImpactPipeline:
                 use_rainfall=self.use_rainfall,
                 rainfall_region=self.rainfall_region,
                 rainfall_weight=self.rainfall_weight,
+                buffer_km=self.buffer_km,
             )
         elif method == "rule_based":
             return RuleBasedSimilarity(
                 weight_path=self.weight_path,
                 weight_category=self.weight_category,
                 weight_intensity=self.weight_intensity,
+                buffer_km=self.buffer_km,
             )
         elif method == "knn_optimized":
             # 只對3個顯著特徵加大權重 (indices 0,1,8)
@@ -241,6 +290,24 @@ class DisasterImpactPipeline:
                 use_rainfall=use_rain,
                 rainfall_region=self.rainfall_region,
                 rainfall_weight=self.rainfall_weight,
+                buffer_km=self.buffer_km,
+            )
+        elif method == "coastline":
+            return CoastlineSimilarity(buffer_km=self.buffer_km)
+        elif method == "coastline_rrf":
+            optimized_fw = np.array(
+                [3.0, 2.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 2.5, 0.5, 0.5]
+            )
+            return CoastlineRRFSimilarity(
+                buffer_km=self.buffer_km,
+                w_coastline=self.weight_coastline,
+                w_knn=self.weight_knn,
+                w_rainfall=self.weight_rainfall_rrf,
+                feature_weights=self.feature_weights or optimized_fw,
+                pool_size_factor=self.pool_size_factor if self.pool_size_factor != 10 else 12,
+                rrf_k=self.rrf_k,  # 最佳化：rrf_k=60
+                use_rainfall=self.use_rainfall,
+                rainfall_region=self.rainfall_region,
             )
         elif method == "baseline":
             return BaselineSimilarity(seed=42)
@@ -254,6 +321,8 @@ class DisasterImpactPipeline:
             "combined",
             "combined_optimized",
             "combined_rainfall",
+            "coastline",
+            "coastline_rrf",
         ):
             self.similarity.fit(self.features, loader=self.loader)
         else:
@@ -271,7 +340,9 @@ class DisasterImpactPipeline:
                 classify_typhoon_by_rules,
             )
 
-            rule_result = classify_typhoon_by_rules(rec.track, rec.landfall_location)
+            rule_result = classify_typhoon_by_rules(
+                rec.track, rec.landfall_location, buffer_km=self.buffer_km
+            )
             predicted_cat = rule_result["predicted_category"]
             conf = rule_result["confidence"]
             # Still get similar typhoons for reference
@@ -303,10 +374,17 @@ class DisasterImpactPipeline:
 
         sim_result = self.similarity.find_similar(query_id, k=k)
 
+        # coastline 的 distances 為 km，量級過大會使 exp(-d) 下溢；
+        # 改用正規化距離（1 - score）做類比投票。
+        if self.similarity_method == "coastline":
+            vote_distances = [1.0 - s for s in sim_result.scores]
+        else:
+            vote_distances = sim_result.distances
+
         pred = self.model.predict(
             query_id=query_id,
             similar_ids=sim_result.similar_ids,
-            distances=sim_result.distances,
+            distances=vote_distances,
         )
 
         similar_info = []

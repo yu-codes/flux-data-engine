@@ -217,9 +217,24 @@ def _approach_heading(lats: np.ndarray, lons: np.ndarray, closest_idx: int) -> f
 
 
 def classify_typhoon_by_rules(
-    track: pd.DataFrame, landfall_location: str = None
+    track: pd.DataFrame, landfall_location: str = None, buffer_km: float = None
 ) -> dict:
-    """根據軌跡幾何特徵分類颱風（路徑類型 1-9）"""
+    """
+    根據軌跡幾何特徵分類颱風（路徑類型 1-9）
+
+    buffer_km 設定時：先把路徑裁切到「海岸線外擴 buffer_km」範圍內，
+    再以範圍內的幾何進行分類（與其他方法一致，只在範圍內運算）。
+    """
+    if buffer_km is not None:
+        from data_pipiline.stage00_data_ingestion.typhoon.coastline import clip_mask
+
+        keep = clip_mask(
+            track["longitude"].values.astype(float),
+            track["latitude"].values.astype(float),
+            buffer_km,
+        )
+        track = track[keep]
+
     lats = track["latitude"].values.astype(float)
     lons = track["longitude"].values.astype(float)
 
@@ -562,10 +577,13 @@ def _result(
 class RuleBasedSimilarity(SimilarityBase):
     """規則分類 + 加權相似度排序"""
 
-    def __init__(self, weight_path=0.4, weight_category=0.5, weight_intensity=0.1):
+    def __init__(
+        self, weight_path=0.4, weight_category=0.5, weight_intensity=0.1, buffer_km=None
+    ):
         self.weight_path = weight_path
         self.weight_category = weight_category
         self.weight_intensity = weight_intensity
+        self.buffer_km = buffer_km
         self._ids: list[str] = []
         self._features_dict = {}
         self._categories: dict[str, str] = {}
@@ -576,7 +594,9 @@ class RuleBasedSimilarity(SimilarityBase):
         if loader is not None:
             for rec in loader.records:
                 if rec.typhoon_id in feature_dict:
-                    result = classify_typhoon_by_rules(rec.track, rec.landfall_location)
+                    result = classify_typhoon_by_rules(
+                        rec.track, rec.landfall_location, buffer_km=self.buffer_km
+                    )
                     self._categories[rec.typhoon_id] = result["predicted_category"]
         print(f"  ✓ 規則式分類器已擬合 {len(self._ids)} 筆颱風")
 
@@ -641,7 +661,9 @@ class RuleBasedSimilarity(SimilarityBase):
     def classify_track(
         self, track: pd.DataFrame, landfall_location: str = None
     ) -> dict:
-        return classify_typhoon_by_rules(track, landfall_location)
+        return classify_typhoon_by_rules(
+            track, landfall_location, buffer_km=self.buffer_km
+        )
 
     def get_config(self) -> dict:
         return {

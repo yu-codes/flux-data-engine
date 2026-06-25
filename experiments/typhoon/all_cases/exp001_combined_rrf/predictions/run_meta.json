@@ -1,5 +1,5 @@
 {
-  "timestamp": "20260526_131041",
+  "timestamp": "20260622_173449",
   "experiment": "exp001_combined_rrf",
   "config_source": "experiments/typhoon/all_cases/exp001_combined_rrf/run.py",
   "method": "combined",
@@ -20,49 +20,49 @@
     "sakoe_chiba_ratio": 0.3
   },
   "results": {
-    "accuracy": 0.7273,
+    "accuracy": 0.7222,
     "total": 198,
-    "correct": 144,
+    "correct": 143,
     "per_category": {
       "3": {
-        "total": 30,
-        "correct": 18,
-        "accuracy": 0.6
-      },
-      "1": {
-        "total": 23,
-        "correct": 19,
-        "accuracy": 0.8260869565217391
-      },
-      "5": {
-        "total": 30,
-        "correct": 29,
-        "accuracy": 0.9666666666666667
-      },
-      "8": {
-        "total": 6,
-        "correct": 2,
-        "accuracy": 0.3333333333333333
-      },
-      "6": {
         "total": 30,
         "correct": 23,
         "accuracy": 0.7666666666666667
       },
+      "1": {
+        "total": 23,
+        "correct": 22,
+        "accuracy": 0.9565217391304348
+      },
+      "5": {
+        "total": 30,
+        "correct": 27,
+        "accuracy": 0.9
+      },
+      "8": {
+        "total": 6,
+        "correct": 1,
+        "accuracy": 0.16666666666666666
+      },
+      "6": {
+        "total": 30,
+        "correct": 25,
+        "accuracy": 0.8333333333333334
+      },
       "9": {
         "total": 18,
-        "correct": 4,
-        "accuracy": 0.2222222222222222
+        "correct": 1,
+        "accuracy": 0.05555555555555555
       },
       "2": {
         "total": 29,
-        "correct": 26,
-        "accuracy": 0.896551724137931
+        "correct": 24,
+        "accuracy": 0.8275862068965517
       },
       "4": {
         "total": 21,
-        "correct": 16,
-        "accuracy": 0.7619047619047619
+        "correct": 13,
+        "accuracy": 0.6190476190476191
       },
       "7": {
         "total": 11,
@@ -73,14 +73,14 @@
   },
   "rainfall": {
     "overall_mae": {
-      "臺南": 90.42032801418438,
-      "高雄": 117.19685283687944
+      "tn": 73.51873015873016,
+      "kh": 94.25190476190477
     },
     "overall_rmse": {
-      "臺南": 122.5338087989337,
-      "高雄": 147.99432599375072
+      "tn": 104.11954657047988,
+      "kh": 137.34898649716692
     },
     "count": 198,
-    "total_with_data": 188
+    "total_with_data": 189
   }
 }

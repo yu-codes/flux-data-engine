@@ -618,9 +618,10 @@ class TyphoonVisualizer:
             if cats:
                 bp = ax.boxplot(
                     [cat_data[c] for c in cats],
-                    labels=[f"類型{c}" for c in cats],
                     patch_artist=True,
                 )
+                # 跨 matplotlib 版本相容（3.9 起 boxplot 的 labels 改名為 tick_labels）
+                ax.set_xticklabels([f"類型{c}" for c in cats])
                 for patch, cat in zip(bp["boxes"], cats):
                     patch.set_facecolor(_get_color(cat))
                     patch.set_alpha(0.6)

@@ -8,9 +8,13 @@ services:
     environment:
       - PYTHONIOENCODING=utf-8
     volumes:
+      # 掛載原始碼 → 改檔即時生效（搭配 uvicorn --reload）
+      - ./backend:/app/backend
+      - ./data_pipiline:/app/data_pipiline
       - ./data:/app/data
       - ./experiments:/app/experiments
       - ./models:/app/models
+    command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "38000", "--reload"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:38000/health"]
@@ -24,6 +28,15 @@ services:
       dockerfile: frontend.Dockerfile
     ports:
       - "3001:3001"
+    environment:
+      # 容器內 Vite dev 的 /api proxy 目標（主機開發仍預設 127.0.0.1）
+      - VITE_BACKEND_PROXY=http://backend:38000
+    volumes:
+      # 掛載原始碼 → Vite HMR 熱更新
+      - ./frontend:/app
+      # 匿名 volume 保留容器內安裝的 node_modules（避免主機 Windows 版覆蓋）
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "--port", "3001"]
     depends_on:
       backend:
         condition: service_healthy

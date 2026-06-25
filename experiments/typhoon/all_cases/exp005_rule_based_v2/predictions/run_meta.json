@@ -1,5 +1,5 @@
 {
-  "timestamp": "20260528_120327",
+  "timestamp": "20260622_173604",
   "experiment": "exp005_rule_based_v2",
   "config_source": "experiments/typhoon/all_cases/exp005_rule_based_v2/run.py",
   "method": "rule_based",
@@ -67,14 +67,14 @@
   },
   "rainfall": {
     "overall_mae": {
-      "臺南": 96.66380319148938,
-      "高雄": 117.61122340425531
+      "tn": 76.49703703703705,
+      "kh": 100.00984126984127
     },
     "overall_rmse": {
-      "臺南": 126.9287936851067,
-      "高雄": 145.3144441357021
+      "tn": 106.643231328084,
+      "kh": 138.98781161399975
     },
     "count": 198,
-    "total_with_data": 188
+    "total_with_data": 189
   }
 }

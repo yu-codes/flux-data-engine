@@ -19,17 +19,28 @@
             <div class="form-group" style="grid-column: 1 / -1;">
               <label>算法</label>
               <select v-model="form.method" @change="onMethodChange">
-                <option value="combined_optimized">Combined RRF 優化版</option>
-                <option value="combined_rainfall">Combined RRF + 降水訊號</option>
-                <option value="combined">Combined RRF (KNN+DTW+Rule)</option>
+                <option value="coastline_rrf">⭐ 海岸線 RRF 融合（絕對位置＋KNN＋降水）（最高準確率）</option>
+                <option value="coastline">🌀 海岸線範圍 絕對位置相似度</option>
+                <option value="combined_rainfall">Combined RRF（KNN+DTW+Rule，可選降水訊號）</option>
                 <option value="knn_optimized">KNN 優化版 (顯著特徵)</option>
                 <option value="rule_based">Rule-Based (幾何分類)</option>
               </select>
-              <div class="hint">Combined 優化版為推薦方法 (α=0.1, Rule=0.4, DTW=0.5, rrf_k=30)；降水訊號版額外納入事件降水相似度</div>
+              <div class="hint" v-if="form.method === 'coastline_rrf'">
+                新方法：以「絕對位置相似度」為主（權重 0.8），用 RRF 融合 KNN 與可選的降水排名做三訊號投票。準確率最高（LOO 82.3%）。
+              </div>
+              <div class="hint" v-else-if="form.method === 'coastline'">
+                將台灣海岸線向外擴張 n km，只在此範圍內以「絕對經緯度位置」比對路徑曲線，找出地圖上最貼近的幾條歷史颱風路徑。
+              </div>
+              <div class="hint" v-else>Combined RRF（α=0.1, Rule=0.4, DTW=0.5, rrf_k=30），可勾選納入事件降水相似度</div>
             </div>
             <div class="form-group">
               <label>相似數 k</label>
               <input type="number" v-model.number="form.k" min="1" max="20">
+            </div>
+            <div class="form-group">
+              <label>計算範圍：海岸線外擴 (km)</label>
+              <input type="number" v-model.number="form.buffer_km" min="50" max="2000" step="50">
+              <div class="hint">所有方法只在此範圍內計算（預設 500）。改變此值會重算參考特徵，首次稍慢。</div>
             </div>
             <template v-if="showCombinedParams">
               <div class="form-group">
@@ -49,7 +60,7 @@
           </div>
 
           <!-- 降水訊號設定 -->
-          <div class="rainfall-config" v-if="showCombinedParams">
+          <div class="rainfall-config" v-if="showRainfallConfig">
             <label class="checkbox-row">
               <input type="checkbox" v-model="form.use_rainfall">
               <span>使用降水資料作為相似度特徵</span>
@@ -110,6 +121,19 @@
 
       <!-- Right: Results -->
       <div v-if="result">
+        <!-- Map projection -->
+        <div class="card" v-if="result.query_track && result.query_track.length">
+          <h3>路徑地圖投影 <span class="hint" style="font-weight:400;">（滾輪縮放、拖曳平移）</span></h3>
+          <TyphoonMap
+            :coastline="result.coastline"
+            :buffer="result.buffer"
+            :query-track="result.query_track"
+            :similars="result.similar_typhoons"
+            :buffer-km="result.buffer_km || form.buffer_km"
+            :distance-unit="result.distance_unit"
+          />
+        </div>
+
         <!-- Summary -->
         <div class="card result-box">
           <h2>預測結果</h2>
@@ -133,7 +157,7 @@
           <div class="table-wrapper">
             <table class="data-table">
               <thead>
-                <tr><th>排名</th><th>名稱</th><th>年份</th><th>分類</th><th>距離</th><th>相似度</th></tr>
+                <tr><th>排名</th><th>名稱</th><th>年份</th><th>分類</th><th>{{ result.distance_unit === 'km' ? '平均偏離' : '距離' }}</th><th>相似度</th></tr>
               </thead>
               <tbody>
                 <tr v-for="(t, i) in result.similar_typhoons" :key="t.typhoon_id">
@@ -141,7 +165,7 @@
                   <td>{{ t.name_zh }} ({{ t.name_en }})</td>
                   <td>{{ t.year }}</td>
                   <td><span class="badge badge-primary">{{ t.category }}</span></td>
-                  <td>{{ t.distance.toFixed(3) }}</td>
+                  <td>{{ result.distance_unit === 'km' ? Math.round(t.distance) + ' km' : t.distance.toFixed(3) }}</td>
                   <td :style="{color: t.score > 0.7 ? 'var(--success)' : t.score > 0.4 ? 'var(--warning)' : 'var(--text-secondary)', fontWeight: 600}">
                     {{ (t.score * 100).toFixed(1) }}%
                   </td>
@@ -223,6 +247,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import api from '../../api'
+import TyphoonMap from '../../components/TyphoonMap.vue'
 
 const EXAMPLES = {
   westward: [
@@ -272,7 +297,7 @@ const regions = [
 ]
 
 const form = ref({
-  method: 'combined_optimized',
+  method: 'coastline_rrf',
   k: 5,
   alpha: 0.10,
   rule_weight: 0.40,
@@ -281,6 +306,7 @@ const form = ref({
   rainfall_region: 'tn',
   rainfall_weight: 0.15,
   expected_rainfall: null,
+  buffer_km: 500,
 })
 
 const trackInput = ref(JSON.stringify(EXAMPLES.westward, null, 2))
@@ -291,9 +317,12 @@ const error = ref('')
 const modalImg = ref(null)
 
 const showCombinedParams = computed(() =>
-  form.value.method === 'combined' ||
-  form.value.method === 'combined_optimized' ||
   form.value.method === 'combined_rainfall'
+)
+// 支援降水訊號的方法（顯示降水設定）
+const showRainfallConfig = computed(() =>
+  form.value.method === 'combined_rainfall' ||
+  form.value.method === 'coastline_rrf'
 )
 
 const sortedVotes = computed(() => {
@@ -302,21 +331,10 @@ const sortedVotes = computed(() => {
 })
 
 function onMethodChange() {
-  if (form.value.method === 'combined_optimized') {
+  if (form.value.method === 'combined_rainfall') {
     form.value.alpha = 0.10
     form.value.rule_weight = 0.40
     form.value.rrf_k = 30
-    form.value.use_rainfall = false
-  } else if (form.value.method === 'combined_rainfall') {
-    form.value.alpha = 0.10
-    form.value.rule_weight = 0.40
-    form.value.rrf_k = 30
-    form.value.use_rainfall = true  // 此方法本質啟用降水訊號
-  } else if (form.value.method === 'combined') {
-    form.value.alpha = 0.13
-    form.value.rule_weight = 0.25
-    form.value.rrf_k = 60
-    form.value.use_rainfall = false
   }
 }
 
@@ -341,10 +359,15 @@ async function submitPredict() {
       method: form.value.method,
       k: form.value.k,
     }
+    // 計算範圍（海岸線外擴 km）— 所有方法共用
+    payload.buffer_km = form.value.buffer_km
     if (showCombinedParams.value) {
       payload.alpha = form.value.alpha
       payload.rule_weight = form.value.rule_weight
       payload.rrf_k = form.value.rrf_k
+    }
+    // 降水訊號（combined_rainfall / coastline_rrf 共用）
+    if (showRainfallConfig.value) {
       payload.use_rainfall = form.value.use_rainfall
       if (form.value.use_rainfall) {
         payload.rainfall_region = form.value.rainfall_region

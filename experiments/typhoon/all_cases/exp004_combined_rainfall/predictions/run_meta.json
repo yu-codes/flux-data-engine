@@ -1,5 +1,5 @@
 {
-  "timestamp": "20260618_160316",
+  "timestamp": "20260622_173549",
   "experiment": "exp004_combined_rainfall",
   "config_source": "experiments/typhoon/all_cases/exp004_combined_rainfall/run.py",
   "method": "combined_rainfall",
@@ -36,14 +36,14 @@
     "rainfall_weight": 0.15
   },
   "results": {
-    "accuracy": 0.7828,
+    "accuracy": 0.7879,
     "total": 198,
-    "correct": 155,
+    "correct": 156,
     "per_category": {
       "3": {
         "total": 30,
-        "correct": 23,
-        "accuracy": 0.7666666666666667
+        "correct": 24,
+        "accuracy": 0.8
       },
       "1": {
         "total": 23,
@@ -57,8 +57,8 @@
       },
       "8": {
         "total": 6,
-        "correct": 3,
-        "accuracy": 0.5
+        "correct": 2,
+        "accuracy": 0.3333333333333333
       },
       "6": {
         "total": 30,
@@ -77,13 +77,13 @@
       },
       "4": {
         "total": 21,
-        "correct": 17,
-        "accuracy": 0.8095238095238095
+        "correct": 16,
+        "accuracy": 0.7619047619047619
       },
       "7": {
         "total": 11,
-        "correct": 8,
-        "accuracy": 0.7272727272727273
+        "correct": 10,
+        "accuracy": 0.9090909090909091
       }
     }
   },
@@ -93,12 +93,12 @@
       "kh"
     ],
     "overall_mae": {
-      "tn": 56.91674603174603,
-      "kh": 81.3804761904762
+      "tn": 57.205767195767194,
+      "kh": 79.55309523809525
     },
     "overall_rmse": {
-      "tn": 83.47228677624739,
-      "kh": 121.24473613512544
+      "tn": 86.08449021487876,
+      "kh": 119.68731465152045
     },
     "count": 198
   }
