@@ -6,6 +6,9 @@ from data_pipiline.stage09_inference_pipeline.typhoon.predict import (
     DisasterImpactPipeline,
 )
 from data_pipiline.stage08_downstream_analysis.typhoon.rainfall import RainfallAnalyzer
+from data_pipiline.stage08_downstream_analysis.typhoon.precip_analog import (
+    PrecipAnalogModel,
+)
 
 # Combined RRF 僅保留可選降水訊號的版本（combined_rainfall）
 SUPPORTED_METHODS = [
@@ -20,12 +23,15 @@ DEFAULT_BUFFER_KM = 500.0
 DATA_DIR = "data/typhoon/preprocessed"
 # 即時預測使用完整 207 筆颱風資料
 REALTIME_DATASET = "typhoons_overview.json"
+# 降水類比集合資料庫（由 scripts/build_precip_composite.py 產生）
+PRECIP_ANALOG_NPZ = "data/typhoon/preprocessed/precip_analog.npz"
 
 
 class AppState:
     def __init__(self):
         self.pipelines: dict[str, DisasterImpactPipeline] = {}
         self.rainfall_analyzer: RainfallAnalyzer | None = None
+        self.precip_analog: PrecipAnalogModel | None = None
 
     def initialize(self):
         """預載所有模型（即時預測：完整 207 筆）"""
@@ -66,10 +72,22 @@ class AppState:
             # 降水分析器共用任一 pipeline 已載入的 loader（資料源統一為 overview）
             any_pipeline = next(iter(self.pipelines.values()), None)
             loader = any_pipeline.loader if any_pipeline else None
-            self.rainfall_analyzer = RainfallAnalyzer(loader=loader, processed_dir=DATA_DIR)
+            self.rainfall_analyzer = RainfallAnalyzer(
+                loader=loader, processed_dir=DATA_DIR
+            )
             self.rainfall_analyzer.load()
         except Exception:
             self.rainfall_analyzer = None
+
+        # 降水類比集合模式（降水機率分布地圖用）
+        try:
+            npz = Path(PRECIP_ANALOG_NPZ)
+            if npz.exists():
+                self.precip_analog = PrecipAnalogModel(npz).load()
+            else:
+                self.precip_analog = None
+        except Exception:
+            self.precip_analog = None
 
     def cleanup(self):
         self.pipelines.clear()

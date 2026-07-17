@@ -9,3 +9,6 @@ fastapi>=0.111
 uvicorn[standard]>=0.30
 pyyaml>=6.0
 scipy>=1.11
+cdsapi>=0.7
+xarray>=2023.1
+netcdf4>=1.6

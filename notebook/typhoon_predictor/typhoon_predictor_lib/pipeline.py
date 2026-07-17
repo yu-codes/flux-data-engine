@@ -45,6 +45,7 @@ def similar_typhoons_table(
         )
         rows.append(
             {
+                "id": typhoon_id,
                 "颱風": f"{record['name_zh']} ({record['name_en']})",
                 "年份": record["year"],
                 "侵臺分類": record["category"],

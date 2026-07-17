@@ -31,6 +31,11 @@ from data_pipiline.stage00_data_ingestion.typhoon.regions import (
     region_codes,
     region_label,
 )
+from data_pipiline.stage08_downstream_analysis.typhoon.precip_analog import (
+    DEFAULT_THRESHOLDS,
+    DEFAULT_BANDWIDTH_KM,
+    interpolate_track,
+)
 
 router = APIRouter(prefix="/api/typhoon", tags=["typhoon"])
 
@@ -232,7 +237,9 @@ def predict(req: PredictRequest):
                 pipeline.similarity.configure_rainfall(
                     use_rainfall=use_rain,
                     region=req.rainfall_region,
-                    weight=req.rainfall_weight if req.rainfall_weight is not None else 0.15,
+                    weight=(
+                        req.rainfall_weight if req.rainfall_weight is not None else 0.15
+                    ),
                 )
                 if use_rain and req.expected_rainfall is not None:
                     sim_kwargs["query_rainfall"] = req.expected_rainfall
@@ -259,7 +266,9 @@ def predict(req: PredictRequest):
             rec.track["latitude"].values,
             buffer_km,
         )
-        similarity = float(np.exp(-offset / SCORE_TAU_KM)) if np.isfinite(offset) else 0.0
+        similarity = (
+            float(np.exp(-offset / SCORE_TAU_KM)) if np.isfinite(offset) else 0.0
+        )
         similar_info.append(
             SimilarTyphoon(
                 typhoon_id=tid,
@@ -289,9 +298,7 @@ def predict(req: PredictRequest):
                 stations: dict[str, RainfallStation] = {}
                 for code in region_codes():
                     vals = [
-                        ar[code]
-                        for ar in analog_rainfalls
-                        if ar.get(code) is not None
+                        ar[code] for ar in analog_rainfalls if ar.get(code) is not None
                     ]
                     if vals:
                         label = region_label(code)
@@ -391,6 +398,71 @@ def get_coastline(buffer_km: float = DEFAULT_BUFFER_KM):
         "buffer_km": round(buffer_km, 1),
         "coastline": coast.outline_lonlat(),
         "buffer": coast.buffer_polygon(buffer_km),
+    }
+
+
+# === 降水機率分布（類比集合）端點 ===
+class PrecipForecastRequest(BaseModel):
+    # 查詢颱風路徑（將沿折線內插為 steps 個動畫格）
+    track: list[TrackPoint] | None = None
+    # 或直接指定位置（拖曳颱風時用單一位置）
+    positions: list[TrackPoint] | None = None
+    steps: int = Field(default=24, ge=2, le=80)
+    thresholds: list[float] | None = None
+    bandwidth_km: float = Field(default=DEFAULT_BANDWIDTH_KM, ge=30, le=600)
+    use_wind: bool = True
+
+
+@router.post("/precipitation_forecast")
+def precipitation_forecast(req: PrecipForecastRequest):
+    """
+    依查詢颱風位置，回傳台灣各網格的降水機率分布（Analog Ensemble）。
+
+    回傳每個動畫格（frame）包含颱風位置、期望降水 (mm/hr) 與各門檻的超越機率。
+    前端可逐格播放（近似動畫）或拖曳颱風位置即時查詢。
+    """
+    model = app_state.precip_analog
+    if model is None or not model.loaded:
+        raise HTTPException(
+            503,
+            "降水類比資料庫未載入，請先執行 scripts/build_precip_composite.py",
+        )
+
+    thresholds = req.thresholds or DEFAULT_THRESHOLDS
+    thresholds = sorted({float(t) for t in thresholds if t > 0})
+
+    # 決定要估計的位置序列
+    if req.positions:
+        positions = [
+            {"lat": p.latitude, "lon": p.longitude, "wind_kt": p.wind_kt}
+            for p in req.positions
+        ]
+    elif req.track:
+        raw = [
+            {"latitude": p.latitude, "longitude": p.longitude, "wind_kt": p.wind_kt}
+            for p in req.track
+        ]
+        positions = interpolate_track(raw, req.steps)
+    else:
+        raise HTTPException(400, "需要提供 track 或 positions")
+
+    frames = model.forecast_positions(
+        positions,
+        thresholds=thresholds,
+        bandwidth_km=req.bandwidth_km,
+        use_wind=req.use_wind,
+    )
+
+    return {
+        "grid_lat": [round(float(v), 4) for v in model.grid_lat],
+        "grid_lon": [round(float(v), 4) for v in model.grid_lon],
+        "grid_shape": list(model.grid_shape),
+        "cell_deg": 0.25,
+        "thresholds": thresholds,
+        "bandwidth_km": req.bandwidth_km,
+        "n_database_hours": int(len(model.storm_lat)),
+        "coastline": coast.outline_lonlat(),
+        "frames": frames,
     }
 
 

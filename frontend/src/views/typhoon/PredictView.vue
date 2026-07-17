@@ -134,6 +134,11 @@
           />
         </div>
 
+        <!-- 降水機率分布地圖 -->
+        <div class="card" v-if="submittedTrack.length">
+          <PrecipProbMap :track="submittedTrack" />
+        </div>
+
         <!-- Summary -->
         <div class="card result-box">
           <h2>預測結果</h2>
@@ -248,6 +253,7 @@
 import { ref, computed } from 'vue'
 import api from '../../api'
 import TyphoonMap from '../../components/TyphoonMap.vue'
+import PrecipProbMap from '../../components/PrecipProbMap.vue'
 
 const EXAMPLES = {
   westward: [
@@ -315,6 +321,7 @@ const loading = ref(false)
 const result = ref(null)
 const error = ref('')
 const modalImg = ref(null)
+const submittedTrack = ref([])
 
 const showCombinedParams = computed(() =>
   form.value.method === 'combined_rainfall'
@@ -354,6 +361,7 @@ async function submitPredict() {
 
   try {
     const track = JSON.parse(trackInput.value)
+    submittedTrack.value = track
     const payload = {
       track,
       method: form.value.method,
