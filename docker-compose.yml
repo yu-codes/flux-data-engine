@@ -1,43 +1,151 @@
+# One-command local stack. Ports are deliberately non-standard so the stack can
+# run alongside other projects in this workspace.
+
+name: flux-data-engine
+
+x-backend-env: &backend-env
+  FLUX_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-flux}:${POSTGRES_PASSWORD:-flux}@postgres:5432/${POSTGRES_DB:-flux}
+  FLUX_DATA_ROOT: /app/data
+  FLUX_STORAGE_ROOT: /app/var/storage
+  FLUX_STORAGE_BACKEND: ${FLUX_STORAGE_BACKEND:-local}
+  FLUX_S3_ENDPOINT_URL: http://minio:9000
+  FLUX_S3_BUCKET: ${FLUX_S3_BUCKET:-flux}
+  FLUX_S3_ACCESS_KEY: ${MINIO_ROOT_USER:-flux}
+  FLUX_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-fluxflux}
+  FLUX_REDIS_URL: redis://redis:6379/0
+  FLUX_EXECUTION_MODE: ${FLUX_EXECUTION_MODE:-inline}
+  FLUX_AUTH_ENABLED: ${FLUX_AUTH_ENABLED:-true}
+  FLUX_SECRET_KEY: ${FLUX_SECRET_KEY:-dev-only-insecure-key-change-me}
+  FLUX_BOOTSTRAP_ADMIN_EMAIL: ${FLUX_BOOTSTRAP_ADMIN_EMAIL:-admin@flux.local}
+  FLUX_BOOTSTRAP_ADMIN_PASSWORD: ${FLUX_BOOTSTRAP_ADMIN_PASSWORD:-flux-admin}
+  FLUX_DEBUG: ${FLUX_DEBUG:-false}
+  PYTHONIOENCODING: utf-8
+
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-flux}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flux}
+      POSTGRES_DB: ${POSTGRES_DB:-flux}
+    ports:
+      - "35432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-flux} -d ${POSTGRES_DB:-flux}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    ports:
+      - "36379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Object storage. Set FLUX_STORAGE_BACKEND=s3 to route datasets, result
+  # payloads and model artifacts here instead of the local volume.
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-flux}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-fluxflux}
+    ports:
+      - "39000:9000"
+      - "39001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   backend:
     build:
       context: .
-      dockerfile: backend.Dockerfile
+      dockerfile: backend/Dockerfile
+    environment:
+      <<: *backend-env
+      FLUX_SEED_ON_STARTUP: ${FLUX_SEED_ON_STARTUP:-true}
+      # Only the API bootstraps the schema and the first administrator.
+      FLUX_SCHEDULER_ENABLED: "false"
     ports:
       - "38000:38000"
-    environment:
-      - PYTHONIOENCODING=utf-8
     volumes:
-      # 掛載原始碼 → 改檔即時生效（搭配 uvicorn --reload）
-      - ./backend:/app/backend
-      - ./data_pipiline:/app/data_pipiline
+      # Source is mounted so --reload picks up edits during development.
+      - ./backend/app:/app/backend/app
+      - ./backend/alembic:/app/backend/alembic
       - ./data:/app/data
-      - ./experiments:/app/experiments
-      - ./models:/app/models
-    command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "38000", "--reload"]
+      - backend-storage:/app/var/storage
+    command:
+      - sh
+      - -c
+      - "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 38000 --reload"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:38000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  frontend:
+  # Runs queued executions and fires schedules. Harmless in inline mode: the
+  # queue stays empty and only the scheduler loop does anything.
+  worker:
     build:
       context: .
-      dockerfile: frontend.Dockerfile
-    ports:
-      - "3001:3001"
+      dockerfile: backend/Dockerfile
     environment:
-      # 容器內 Vite dev 的 /api proxy 目標（主機開發仍預設 127.0.0.1）
-      - VITE_BACKEND_PROXY=http://backend:38000
+      <<: *backend-env
+      FLUX_SEED_ON_STARTUP: "false"
+      FLUX_SCHEDULER_ENABLED: ${FLUX_SCHEDULER_ENABLED:-true}
     volumes:
-      # 掛載原始碼 → Vite HMR 熱更新
-      - ./frontend:/app
-      # 匿名 volume 保留容器內安裝的 node_modules（避免主機 Windows 版覆蓋）
-      - /app/node_modules
-    command: ["npm", "run", "dev", "--", "--host", "--port", "3001"]
+      - ./backend/app:/app/backend/app
+      - ./data:/app/data
+      - backend-storage:/app/var/storage
+    command: ["python", "-m", "app.worker"]
+    # The image's healthcheck probes the API port, which the worker does not
+    # serve; liveness here is "the process is running".
+    healthcheck:
+      disable: true
     depends_on:
       backend:
         condition: service_healthy
     restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      VITE_BACKEND_PROXY: http://backend:38000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./frontend:/app
+      # Anonymous volume keeps the container's node_modules, not the host's.
+      - /app/node_modules
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  backend-storage:

@@ -1,0 +1,29 @@
+"""Persistence ports for the platform module."""
+
+from __future__ import annotations
+
+from typing import Protocol
+
+from .entities import AuditEntry, User
+
+
+class UserRepository(Protocol):
+    def add(self, user: User) -> User: ...
+    def get(self, user_id: str) -> User | None: ...
+    def get_by_email(self, email: str) -> User | None: ...
+    def list(self) -> list[User]: ...
+    def update(self, user: User) -> User: ...
+    def delete(self, user_id: str) -> None: ...
+    def count(self) -> int: ...
+
+
+class AuditRepository(Protocol):
+    def add(self, entry: AuditEntry) -> AuditEntry: ...
+    def list(
+        self,
+        *,
+        actor_id: str | None = ...,
+        resource_type: str | None = ...,
+        action: str | None = ...,
+        limit: int = ...,
+    ) -> list[AuditEntry]: ...

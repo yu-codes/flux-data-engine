@@ -1,203 +1,265 @@
 <template>
-  <div class="map-wrap">
+  <div class="map-host">
     <svg
-      ref="svgEl"
-      class="map-svg"
       :viewBox="`0 0 ${W} ${H}`"
-      @wheel.prevent="onWheel"
-      @mousedown="onDown"
+      class="map-svg"
+      role="img"
+      aria-label="Typhoon tracks around Taiwan"
+      @click="onClick"
       @mousemove="onMove"
-      @mouseup="onUp"
-      @mouseleave="onUp"
     >
-      <rect :width="W" :height="H" class="sea" />
-      <g :transform="`translate(${pan.x} ${pan.y}) scale(${zoom})`">
-        <!-- 海岸線外擴緩衝區 -->
-        <polygon v-if="bufferPts" :points="bufferPts" class="buffer" :stroke-width="1.5 / zoom" />
-        <!-- 台灣本島 -->
-        <polygon v-if="coastPts" :points="coastPts" class="land" :stroke-width="1 / zoom" />
+      <rect :width="W" :height="H" class="map-sea" />
 
-        <!-- 相似颱風路徑：範圍外淡、範圍內（實際參與計算）醒目 -->
-        <g v-for="(s, i) in similars" :key="s.typhoon_id">
-          <polyline
-            :points="trackPts(s.track)"
-            class="sim-track"
-            :stroke="color(i)"
-            :stroke-width="(1.6 - i * 0.1) / zoom"
-            :opacity="0.28"
-          />
-          <polyline
-            v-for="(seg, si) in inRangeSegments(s.track)" :key="si"
-            :points="trackPts(seg)"
-            class="sim-track"
-            :stroke="color(i)"
-            :stroke-width="(2.8 - i * 0.15) / zoom"
-            :opacity="0.92 - i * 0.06"
-          />
-          <circle
-            v-for="(p, j) in s.track" :key="j"
-            :cx="proj(p).x" :cy="proj(p).y" :r="(p.in_range ? 1.9 : 1.1) / zoom"
-            :fill="color(i)" :opacity="p.in_range ? (0.85 - i * 0.05) : 0.25"
-          />
-        </g>
+      <!-- graticule -->
+      <g class="map-grid">
+        <line v-for="lon in gridLons" :key="`gl-${lon}`" :x1="px(lon)" :x2="px(lon)" y1="0" :y2="H" />
+        <line v-for="lat in gridLats" :key="`ga-${lat}`" :y1="py(lat)" :y2="py(lat)" x1="0" :x2="W" />
+        <text v-for="lon in gridLons" :key="`tl-${lon}`" :x="px(lon) + 3" :y="H - 5" class="map-tick">
+          {{ lon }}°E
+        </text>
+        <text v-for="lat in gridLats" :key="`ta-${lat}`" x="4" :y="py(lat) - 3" class="map-tick">
+          {{ lat }}°N
+        </text>
+      </g>
 
-        <!-- 查詢路徑（最上層、醒目）：範圍外淡、範圍內粗 -->
-        <polyline v-if="queryTrack.length" :points="trackPts(queryTrack)" class="query-track" :stroke-width="2 / zoom" :opacity="0.3" />
+      <!-- computation window: the coastline buffer every method works inside -->
+      <polygon v-if="bufferPath" :points="bufferPath" class="map-buffer" />
+      <polygon v-if="coastlinePath" :points="coastlinePath" class="map-island" />
+
+      <!-- analog tracks -->
+      <g v-for="(analog, index) in analogs" :key="analog.typhoon_id">
         <polyline
-          v-for="(seg, si) in inRangeSegments(queryTrack)" :key="'qseg' + si"
-          :points="trackPts(seg)" class="query-track" :stroke-width="4.5 / zoom"
+          :points="trackPoints(analog.track)"
+          class="map-analog"
+          :stroke="analogColour(index)"
+          :stroke-opacity="highlighted && highlighted !== analog.typhoon_id ? 0.18 : 0.85"
+          :stroke-width="highlighted === analog.typhoon_id ? 3 : 1.8"
         />
         <circle
-          v-for="(p, j) in queryTrack" :key="'q' + j"
-          :cx="proj(p).x" :cy="proj(p).y" :r="(p.in_range ? 2.8 : 1.6) / zoom"
-          class="query-pt" :opacity="p.in_range ? 1 : 0.35"
+          v-for="(point, pi) in inRange(analog.track)"
+          :key="`${analog.typhoon_id}-${pi}`"
+          :cx="px(point.lon)"
+          :cy="py(point.lat)"
+          r="1.6"
+          :fill="analogColour(index)"
+          :fill-opacity="highlighted && highlighted !== analog.typhoon_id ? 0.2 : 0.8"
         />
       </g>
+
+      <!-- query track -->
+      <polyline v-if="queryTrack.length > 1" :points="trackPoints(queryTrack)" class="map-query" />
+      <circle
+        v-for="(point, index) in queryTrack"
+        :key="`q-${index}`"
+        :cx="px(point.lon)"
+        :cy="py(point.lat)"
+        :r="index === queryTrack.length - 1 ? 5 : 3.5"
+        class="map-query-point"
+      />
+      <text
+        v-for="(point, index) in queryTrack"
+        :key="`qn-${index}`"
+        :x="px(point.lon) + 7"
+        :y="py(point.lat) - 6"
+        class="map-query-label"
+      >
+        {{ index + 1 }}
+      </text>
+
+      <!-- cursor readout while drawing -->
+      <text v-if="editable && cursor" :x="8" :y="18" class="map-cursor">
+        {{ cursor.lat.toFixed(2) }}°N, {{ cursor.lon.toFixed(2) }}°E
+      </text>
     </svg>
 
-    <!-- 控制與圖例 -->
-    <div class="map-controls">
-      <button @click="zoomBy(1.25)" title="放大">＋</button>
-      <button @click="zoomBy(0.8)" title="縮小">－</button>
-      <button @click="reset" title="重設視野">⟳</button>
-    </div>
-    <div class="map-legend">
-      <div class="lg-row"><span class="lg-line query"></span> 查詢路徑</div>
-      <div class="lg-row" v-for="(s, i) in similars" :key="s.typhoon_id">
-        <span class="lg-line" :style="{ background: color(i) }"></span>
-        {{ i + 1 }}. {{ s.name_zh }} ({{ s.year }})
-        <span class="lg-meta">{{ distanceUnit === 'km' ? Math.round(s.distance) + ' km' : (s.score * 100).toFixed(0) + '%' }}</span>
+    <div class="map-legend row items-center q-gutter-md">
+      <div class="row items-center q-gutter-xs">
+        <span class="legend-line legend-line--query" />
+        <span class="text-caption">Query track</span>
       </div>
-      <div class="lg-row sub"><span class="lg-line buffer"></span> 海岸線外擴 {{ bufferKm }} km</div>
+      <div v-for="(analog, index) in analogs" :key="`lg-${analog.typhoon_id}`" class="row items-center q-gutter-xs">
+        <span class="legend-line" :style="{ background: analogColour(index) }" />
+        <span class="text-caption">
+          {{ analog.name_en || analog.typhoon_id }} · {{ analog.offset_km }} km
+        </span>
+      </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, computed, watch } from 'vue'
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 
-const props = defineProps({
-  coastline: { type: Array, default: () => [] },   // [{lat,lon}]
-  buffer: { type: Array, default: () => [] },
-  queryTrack: { type: Array, default: () => [] },
-  similars: { type: Array, default: () => [] },     // [{typhoon_id,name_zh,year,track,score,distance}]
-  bufferKm: { type: Number, default: 500 },
-  distanceUnit: { type: String, default: 'score' },
-})
+import type { TrackCoord, TyphoonAnalog } from '@/types'
 
-const W = 800
-const H = 600
-const PAD = 30
-const PALETTE = ['#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#db2777', '#65a30d', '#7c3aed']
+const props = withDefaults(
+  defineProps<{
+    queryTrack: TrackCoord[]
+    analogs?: TyphoonAnalog[]
+    coastline?: TrackCoord[]
+    buffer?: TrackCoord[]
+    highlighted?: string | null
+    editable?: boolean
+  }>(),
+  { analogs: () => [], coastline: () => [], buffer: () => [], highlighted: null, editable: false },
+)
 
-const svgEl = ref(null)
-const zoom = ref(1)
-const pan = ref({ x: 0, y: 0 })
-const drag = ref(null)
+const emit = defineEmits<{ (e: 'add-point', point: { latitude: number; longitude: number }): void }>()
 
-function color(i) { return PALETTE[i % PALETTE.length] }
+/**
+ * Equirectangular projection over a fixed western-Pacific window. It is not a
+ * survey-grade projection, but at this scale it renders track geometry
+ * faithfully and needs no tile server or mapping library.
+ */
+const W = 900
+const H = 620
+const LON_MIN = 108
+const LON_MAX = 140
+const LAT_MIN = 12
+const LAT_MAX = 32
 
-// --- 等距投影：用所有幾何的範圍計算 fit 變換，回傳 (point)->{x,y} ---
-const projFn = computed(() => {
-  const all = [...props.coastline, ...props.buffer, ...props.queryTrack]
-  props.similars.forEach((s) => (s.track || []).forEach((p) => all.push(p)))
-  if (!all.length) return () => ({ x: W / 2, y: H / 2 })
+const gridLons = [110, 115, 120, 125, 130, 135, 140]
+const gridLats = [15, 20, 25, 30]
 
-  const lat0 = all.reduce((a, p) => a + p.lat, 0) / all.length
-  const cos0 = Math.cos((lat0 * Math.PI) / 180)
-  const wx = (p) => p.lon * cos0      // 經度（cos 修正）
-  const wy = (p) => -p.lat            // 北上為螢幕上方
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
-  all.forEach((p) => {
-    const x = wx(p), y = wy(p)
-    if (x < minX) minX = x
-    if (x > maxX) maxX = x
-    if (y < minY) minY = y
-    if (y > maxY) maxY = y
-  })
-  const spanX = maxX - minX || 1
-  const spanY = maxY - minY || 1
-  const scale = Math.min((W - 2 * PAD) / spanX, (H - 2 * PAD) / spanY)
-  const offX = (W - scale * spanX) / 2
-  const offY = (H - scale * spanY) / 2
-  return (p) => ({ x: offX + (wx(p) - minX) * scale, y: offY + (wy(p) - minY) * scale })
-})
+const PALETTE = ['#c1662f', '#3f7d58', '#8a5fa8', '#c08b2e', '#4d7c8a', '#b3453b', '#7a6f5d']
 
-function proj(p) { return projFn.value(p) }
-function trackPts(track) {
-  return (track || []).map((p) => { const q = proj(p); return `${q.x},${q.y}` }).join(' ')
+const cursor = ref<{ lat: number; lon: number } | null>(null)
+
+function px(lon: number) {
+  return ((lon - LON_MIN) / (LON_MAX - LON_MIN)) * W
 }
-// 取出落在計算範圍內的連續路徑段（in_range 的相鄰點），供醒目繪製
-function inRangeSegments(track) {
-  const segs = []
-  let cur = []
-  for (const p of track || []) {
-    if (p.in_range) {
-      cur.push(p)
-    } else {
-      if (cur.length >= 2) segs.push(cur)
-      cur = []
-    }
-  }
-  if (cur.length >= 2) segs.push(cur)
-  return segs
-}
-const coastPts = computed(() => (props.coastline.length ? trackPts(props.coastline) : ''))
-const bufferPts = computed(() => (props.buffer.length ? trackPts(props.buffer) : ''))
 
-// --- 縮放 / 平移 ---
-function zoomAt(factor, cx, cy) {
-  const newZoom = Math.max(0.5, Math.min(20, zoom.value * factor))
-  const k = newZoom / zoom.value
-  pan.value = { x: cx - (cx - pan.value.x) * k, y: cy - (cy - pan.value.y) * k }
-  zoom.value = newZoom
+function py(lat: number) {
+  return H - ((lat - LAT_MIN) / (LAT_MAX - LAT_MIN)) * H
 }
-function svgPoint(evt) {
-  const rect = svgEl.value.getBoundingClientRect()
+
+function unproject(x: number, y: number) {
   return {
-    x: ((evt.clientX - rect.left) / rect.width) * W,
-    y: ((evt.clientY - rect.top) / rect.height) * H,
+    lon: LON_MIN + (x / W) * (LON_MAX - LON_MIN),
+    lat: LAT_MIN + ((H - y) / H) * (LAT_MAX - LAT_MIN),
   }
 }
-function onWheel(e) { const p = svgPoint(e); zoomAt(e.deltaY < 0 ? 1.15 : 0.87, p.x, p.y) }
-function zoomBy(f) { zoomAt(f, W / 2, H / 2) }
-function onDown(e) { drag.value = { ...svgPoint(e), px: pan.value.x, py: pan.value.y } }
-function onMove(e) {
-  if (!drag.value) return
-  const p = svgPoint(e)
-  pan.value = { x: drag.value.px + (p.x - drag.value.x), y: drag.value.py + (p.y - drag.value.y) }
-}
-function onUp() { drag.value = null }
-function reset() { zoom.value = 1; pan.value = { x: 0, y: 0 } }
 
-watch(() => [props.coastline, props.queryTrack, props.similars], reset)
+function trackPoints(track: TrackCoord[]) {
+  return track.map((p) => `${px(p.lon).toFixed(1)},${py(p.lat).toFixed(1)}`).join(' ')
+}
+
+function inRange(track: TrackCoord[]) {
+  return track.filter((p) => p.in_range !== false)
+}
+
+function analogColour(index: number) {
+  return PALETTE[index % PALETTE.length]
+}
+
+const coastlinePath = computed(() => (props.coastline.length ? trackPoints(props.coastline) : ''))
+const bufferPath = computed(() => (props.buffer.length ? trackPoints(props.buffer) : ''))
+
+function toLocal(event: MouseEvent) {
+  const svg = event.currentTarget as SVGSVGElement
+  const rect = svg.getBoundingClientRect()
+  return unproject(((event.clientX - rect.left) / rect.width) * W, ((event.clientY - rect.top) / rect.height) * H)
+}
+
+function onMove(event: MouseEvent) {
+  if (!props.editable) return
+  cursor.value = toLocal(event)
+}
+
+function onClick(event: MouseEvent) {
+  if (!props.editable) return
+  const point = toLocal(event)
+  emit('add-point', { latitude: Number(point.lat.toFixed(3)), longitude: Number(point.lon.toFixed(3)) })
+}
 </script>
 
 <style scoped>
-.map-wrap { position: relative; width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid var(--border, #e2e8f0); }
-.map-svg { display: block; width: 100%; height: auto; background: #eaf2fb; cursor: grab; }
-.map-svg:active { cursor: grabbing; }
-.sea { fill: #eaf2fb; }
-.buffer { fill: rgba(56, 126, 184, 0.10); stroke: #387eb8; stroke-dasharray: 6 4; }
-.land { fill: #d9e8c8; stroke: #6b8e4e; }
-.sim-track { fill: none; stroke-linejoin: round; stroke-linecap: round; }
-.query-track { fill: none; stroke: #dc2626; stroke-linejoin: round; stroke-linecap: round; }
-.query-pt { fill: #dc2626; }
-.map-controls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; }
-.map-controls button {
-  width: 30px; height: 30px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px;
-  font-size: 1rem; cursor: pointer; line-height: 1; color: #334155;
+.map-host {
+  width: 100%;
 }
-.map-controls button:hover { background: #f1f5f9; }
+
+.map-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  border: 1px solid rgba(128, 145, 160, 0.25);
+}
+
+.map-sea {
+  fill: rgba(47, 111, 143, 0.08);
+}
+
+.map-grid line {
+  stroke: currentColor;
+  stroke-opacity: 0.1;
+  stroke-width: 1;
+}
+
+.map-tick {
+  fill: currentColor;
+  fill-opacity: 0.4;
+  font-size: 9px;
+}
+
+.map-buffer {
+  fill: rgba(47, 111, 143, 0.1);
+  stroke: rgba(47, 111, 143, 0.55);
+  stroke-dasharray: 6 4;
+  stroke-width: 1.2;
+}
+
+.map-island {
+  fill: rgba(63, 125, 88, 0.55);
+  stroke: rgba(63, 125, 88, 0.9);
+  stroke-width: 1;
+}
+
+.map-analog {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.map-query {
+  fill: none;
+  stroke: #d13b2f;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.map-query-point {
+  fill: #d13b2f;
+  stroke: #fff;
+  stroke-width: 1.2;
+}
+
+.map-query-label {
+  fill: currentColor;
+  fill-opacity: 0.7;
+  font-size: 10px;
+}
+
+.map-cursor {
+  fill: currentColor;
+  fill-opacity: 0.7;
+  font-size: 11px;
+}
+
 .map-legend {
-  position: absolute; left: 10px; bottom: 10px; background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 0.76rem;
-  max-width: 62%; line-height: 1.5;
+  margin-top: 8px;
+  flex-wrap: wrap;
 }
-.lg-row { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-.lg-row.sub { margin-top: 4px; color: var(--text-secondary, #64748b); }
-.lg-line { display: inline-block; width: 18px; height: 3px; border-radius: 2px; background: #999; flex: none; }
-.lg-line.query { background: #dc2626; height: 4px; }
-.lg-line.buffer { background: transparent; border-top: 2px dashed #387eb8; height: 0; }
-.lg-meta { margin-left: auto; padding-left: 8px; color: var(--text-secondary, #64748b); font-variant-numeric: tabular-nums; }
+
+.legend-line {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-line--query {
+  background: #d13b2f;
+}
 </style>

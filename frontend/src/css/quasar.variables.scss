@@ -1,0 +1,20 @@
+// Quasar brand palette. Cool, low-chroma tones so data colours stand out.
+$primary   : #2f6f8f;
+$secondary : #4d7c8a;
+$accent    : #c1662f;
+
+$dark      : #16202b;
+$dark-page : #101820;
+
+$positive  : #3f7d58;
+$negative  : #b3453b;
+$info      : #3d6f9e;
+$warning   : #c08b2e;
+
+// Radii, set here rather than overridden later: Quasar's 3px default was the
+// only radius in the app that belonged to no token, and it showed on every
+// button and input sitting next to a 10px card.
+$generic-border-radius : 6px;
+$button-border-radius  : 6px;
+$chip-border-radius    : 6px;
+$card-border-radius    : 10px;

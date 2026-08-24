@@ -2,11 +2,21 @@
   "permissions": {
     "allow": [
       "Bash(bash scripts/start.sh)",
+      "Bash(bash scripts/stop.sh)",
+      "Bash(bash scripts/test.sh)",
+      "Bash(docker compose ps:*)",
+      "Bash(docker compose logs:*)",
+      "Bash(docker compose config:*)",
       "Bash(curl -s http://localhost:38000/health)",
-      "Bash(curl -s http://localhost:3001/ -o /dev/null -w \"frontend status: %{http_code}\\\\n\")",
-      "Bash(curl -s -X POST http://localhost:38000/api/typhoon/predict -H 'Content-Type: application/json' -d '{ *)",
-      "Bash(curl -s -o /dev/null -w \"static chart status: %{http_code}\\\\n\" \"http://localhost:38000/static/experiments/typhoon/single_case/20260616_090636/prediction_cat6_query.png\")",
-      "Bash(bash scripts/run_pipeline.sh scripts/build_dataset.py)"
+      "Bash(curl -s http://localhost:38000/api/v1/info)",
+      "Bash(curl -s http://localhost:38000/api/v1/overview)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/)",
+      "Bash(cd backend && python -m pytest:*)",
+      "Bash(cd backend && python -m ruff check:*)",
+      "Bash(cd backend && python -m alembic upgrade head)",
+      "Bash(cd backend && python -m alembic current)",
+      "Bash(cd frontend && npm run build)",
+      "Bash(cd frontend && npm run typecheck)"
     ]
   }
 }

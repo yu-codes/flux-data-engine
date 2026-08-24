@@ -7,24 +7,24 @@ __pycache__/
 *.so
 
 # Data files
-data/raw/*.csv
-data/processed/*.csv
-results/*.json
-results/*.csv
+/data/raw/*.csv
+/data/processed/*.csv
+/results/*.json
+/results/*.csv
 
 # Distribution / packaging
 .Python
-build/
+/build/
 develop-eggs/
-dist/
+/dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
-var/
+/var/
 wheels/
 share/python-wheels/
 *.egg-info/
@@ -225,5 +225,18 @@ __marimo__/
 
 
 # data files
-data/
-outputs/
+/data/
+/outputs/
+# --- flux-data-engine ------------------------------------------------------
+# NOTE: directory patterns above are anchored with a leading slash on purpose.
+# An unanchored "data/" also matches backend/app/modules/data/, which would
+# silently drop the entire Data domain from version control.
+backend/var/
+backend/**/__pycache__/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Local environment
+.env
