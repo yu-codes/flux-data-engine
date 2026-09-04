@@ -20,7 +20,7 @@ class SqlSourceRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, source: Source) -> Source:
-        self.session.add(self._stamp(orm.source_to_row(source)))
+        self.session.add(self._stamp(orm.source_to_row(self._file(source))))
         self.session.flush()
         return source
 
@@ -30,7 +30,7 @@ class SqlSourceRepository(WorkspaceScoped):
 
     def get_by_name(self, name: str) -> Source | None:
         row = self.session.scalar(
-            self._scoped(select(orm.SourceRow), orm.SourceRow)
+            self._named(select(orm.SourceRow), orm.SourceRow)
             .where(orm.SourceRow.name == name)
         )
         return orm.source_to_entity(row) if row else None
@@ -64,7 +64,7 @@ class SqlSchemaRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, schema: DataSchema) -> DataSchema:
-        self.session.add(self._stamp(orm.schema_to_row(schema)))
+        self.session.add(self._stamp(orm.schema_to_row(self._file(schema))))
         self.session.flush()
         return schema
 
@@ -95,7 +95,7 @@ class SqlDatasetRepository(WorkspaceScoped):
 
     # -- datasets ----------------------------------------------------------
     def add(self, dataset: Dataset) -> Dataset:
-        self.session.add(self._stamp(orm.dataset_to_row(dataset)))
+        self.session.add(self._stamp(orm.dataset_to_row(self._file(dataset))))
         self.session.flush()
         return dataset
 
@@ -105,7 +105,7 @@ class SqlDatasetRepository(WorkspaceScoped):
 
     def get_by_name(self, name: str) -> Dataset | None:
         row = self.session.scalar(
-            self._scoped(select(orm.DatasetRow), orm.DatasetRow)
+            self._named(select(orm.DatasetRow), orm.DatasetRow)
             .where(orm.DatasetRow.name == name)
         )
         return orm.dataset_to_entity(row) if row else None
@@ -142,7 +142,7 @@ class SqlDatasetRepository(WorkspaceScoped):
 
     # -- versions ----------------------------------------------------------
     def add_version(self, version: DatasetVersion) -> DatasetVersion:
-        self.session.add(self._stamp(orm.version_to_row(version)))
+        self.session.add(self._stamp(orm.version_to_row(self._file(version))))
         self.session.flush()
         return version
 

@@ -24,6 +24,12 @@ class ExecutionRow(Base):
         String(64), nullable=True, index=True
     )
     created_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    #  Which project files this. A filing system rather than a boundary: a
+    #  listing filters by it, a lookup by id does not. Null means "not filed",
+    #  which shows in every project rather than in none.
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     #  Nullable: an execution may run an inline definition - a pipeline step,
@@ -82,6 +88,7 @@ def to_entity(row: ExecutionRow) -> Execution:
         result_id=row.result_id,
         produced_model_version_id=row.produced_model_version_id,
         experiment_id=row.experiment_id,
+        project_id=row.project_id,
         logs=list(row.logs or []),
         metrics=row.metrics or {},
         lineage=row.lineage or {},
@@ -122,4 +129,5 @@ def to_row(entity: Execution, row: ExecutionRow | None = None) -> ExecutionRow:
     row.started_at = entity.started_at
     row.finished_at = entity.finished_at
     row.created_at = entity.created_at
+    row.project_id = entity.project_id
     return row

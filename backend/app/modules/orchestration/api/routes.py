@@ -100,6 +100,9 @@ class PipelineOut(ApiModel):
     last_run_status: str | None
     created_at: datetime
     updated_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class PipelineRunOut(ApiModel):
@@ -310,6 +313,7 @@ def _out(pipeline: Pipeline) -> PipelineOut:
         last_run_status=pipeline.last_run_status,
         created_at=pipeline.created_at,
         updated_at=pipeline.updated_at,
+        project_id=pipeline.project_id,
     )
 
 

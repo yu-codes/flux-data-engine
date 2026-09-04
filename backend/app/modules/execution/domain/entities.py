@@ -78,6 +78,10 @@ class Execution:
     result_id: str | None = None
     produced_model_version_id: str | None = None
     experiment_id: str | None = None
+    #  Which project this is filed under. Null means it is not filed and
+    #  shows in every project — a deliberately shared model, or a run the
+    #  scheduler made without standing anywhere.
+    project_id: str | None = None
     logs: list[str] = field(default_factory=list)
     metrics: dict[str, Any] = field(default_factory=dict)
     lineage: dict[str, Any] = field(default_factory=dict)

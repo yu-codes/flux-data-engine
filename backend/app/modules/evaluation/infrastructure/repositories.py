@@ -20,7 +20,7 @@ class SqlExperimentRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, experiment: Experiment) -> Experiment:
-        self.session.add(self._stamp(orm.experiment_to_row(experiment)))
+        self.session.add(self._stamp(orm.experiment_to_row(self._file(experiment))))
         self.session.flush()
         return experiment
 
@@ -30,7 +30,7 @@ class SqlExperimentRepository(WorkspaceScoped):
 
     def get_by_name(self, name: str) -> Experiment | None:
         row = self.session.scalar(
-            self._scoped(select(orm.ExperimentRow), orm.ExperimentRow)
+            self._named(select(orm.ExperimentRow), orm.ExperimentRow)
             .where(orm.ExperimentRow.name == name)
         )
         return orm.experiment_to_entity(row) if row else None
@@ -63,7 +63,7 @@ class SqlEvaluationRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, evaluation: Evaluation) -> Evaluation:
-        self.session.add(self._stamp(orm.evaluation_to_row(evaluation)))
+        self.session.add(self._stamp(orm.evaluation_to_row(self._file(evaluation))))
         self.session.flush()
         return evaluation
 

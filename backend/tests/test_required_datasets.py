@@ -1,6 +1,6 @@
 """A provider reads the platform's data, not the platform's disk.
 
-The typhoon engine used to open `data/typhoon/preprocessed/*.json` directly.
+The typhoon engine used to open its preprocessed `*.json` files directly.
 Its executions went through the front door - Execution, Result, lineage - while
 its data went through the side one: not versioned, not traceable, and only
 replaceable by changing a volume mount and restarting.

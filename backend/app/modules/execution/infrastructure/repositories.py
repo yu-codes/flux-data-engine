@@ -21,7 +21,7 @@ class SqlExecutionRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, execution: Execution) -> Execution:
-        self.session.add(self._stamp(orm.to_row(execution)))
+        self.session.add(self._stamp(orm.to_row(self._file(execution))))
         self.session.flush()
         return execution
 

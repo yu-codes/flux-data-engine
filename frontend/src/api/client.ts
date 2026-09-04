@@ -43,23 +43,57 @@ export function getWorkspace(): string | null {
 export function setWorkspace(workspaceId: string | null) {
   if (workspaceId) localStorage.setItem(WORKSPACE_KEY, workspaceId)
   else localStorage.removeItem(WORKSPACE_KEY)
+  //  A project belongs to one workspace, so the one we remembered means
+  //  nothing in the workspace we just moved to.
+  localStorage.removeItem(PROJECT_KEY)
   //  Anything remembered belonged to the workspace we just left.
-  setCacheScope(workspaceId)
+  setCacheScope(scopeKey())
 }
 
-//  The stored workspace is chosen before any request goes out, so the cache
-//  starts in the right scope rather than in "default".
-setCacheScope(getWorkspace())
+const PROJECT_KEY = 'flux-project'
+
+/**
+ * Which project the app is filing under. Absent means the default one.
+ *
+ * A workspace is a boundary; a project is a filing system inside it. Sending
+ * the wrong one shows the wrong list, never someone else's data.
+ */
+export function getProject(): string | null {
+  return localStorage.getItem(PROJECT_KEY)
+}
+
+export function setProject(projectId: string | null) {
+  if (projectId) localStorage.setItem(PROJECT_KEY, projectId)
+  else localStorage.removeItem(PROJECT_KEY)
+  //  Every list the cache holds was filtered by the project we just left.
+  setCacheScope(scopeKey())
+}
+
+//  Both halves of the scope, so a cached list can never surface under the
+//  wrong workspace *or* the wrong project.
+function scopeKey(): string | null {
+  const workspace = getWorkspace()
+  const project = getProject()
+  if (!workspace && !project) return null
+  return `${workspace ?? '-'}/${project ?? '-'}`
+}
+
+//  The stored scope is chosen before any request goes out, so the cache starts
+//  where it belongs rather than in "default".
+setCacheScope(scopeKey())
 
 function authHeaders(): Record<string, string> {
   const token = getToken()
   const workspace = getWorkspace()
+  const project = getProject()
   return {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     //  Every request says which workspace it is for. A header rather than a
     //  URL prefix so that every existing route keeps working and a client
     //  that has never chosen one still lands in the default.
     ...(workspace ? { 'X-Workspace': workspace } : {}),
+    //  Same arrangement for the project, for the same reason.
+    ...(project ? { 'X-Project': project } : {}),
   }
 }
 

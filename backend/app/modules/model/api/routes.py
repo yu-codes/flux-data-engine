@@ -10,6 +10,7 @@ from pydantic import Field
 
 from app.api.deps import (
     ModelServiceDep,
+    ProjectServiceDep,
     RegistryDep,
 )
 from app.api.schema_base import ApiModel
@@ -91,6 +92,9 @@ class ModelOut(ApiModel):
     created_by: str | None = None
     created_at: datetime
     updated_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class ModelVersionOut(ApiModel):
@@ -207,6 +211,40 @@ def update_model(model_id: str, payload: ModelUpdate, service: ModelServiceDep):
     return _model_out(model, drifted=service.has_unpublished_changes(model))
 
 
+class ModelFileIn(ApiModel):
+    #  Null is a real value here, not an omission: it shares the definition
+    #  across every project. Which is why this is its own endpoint rather than
+    #  a field on ModelUpdate, where null means "leave it alone".
+    project_id: str | None = None
+
+
+@router.post(
+    "/models/{model_id}/project",
+    response_model=ModelOut,
+    summary="File this definition under a project, or share it across all",
+)
+def file_model(
+    model_id: str,
+    payload: ModelFileIn,
+    service: ModelServiceDep,
+    projects: ProjectServiceDep,
+):
+    """Where a definition is filed, changed on purpose.
+
+    A model definition is the one thing on the platform worth reusing across
+    pieces of work — a scorecard or a threshold rule is about arithmetic, not
+    about the fleet — so it can be shared. Its runs and results stay where the
+    work happened, and are not moved by this.
+    """
+    #  Validated here rather than in the service: the service would otherwise
+    #  need the project repository, and "does this project exist" is the same
+    #  question the API answers everywhere else.
+    if payload.project_id is not None:
+        projects.get(payload.project_id)
+    model = service.file_under(model_id, payload.project_id)
+    return _model_out(model, drifted=service.has_unpublished_changes(model))
+
+
 @router.post(
     "/models/{model_id}/status",
     response_model=ModelOut,
@@ -313,6 +351,7 @@ def _model_out(model: ModelDefinition, *, drifted: bool = False) -> ModelOut:
         created_by=model.created_by,
         created_at=model.created_at,
         updated_at=model.updated_at,
+        project_id=model.project_id,
     )
 
 

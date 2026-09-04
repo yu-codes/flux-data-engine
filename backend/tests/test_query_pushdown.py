@@ -25,7 +25,7 @@ ROW_COUNT = 4000
 @pytest.fixture(scope="module")
 def big_dataset(client, api) -> dict:
     """Wide enough that projection matters, long enough that paging does."""
-    relative = "samples/test_pushdown.csv"
+    relative = "Demo/sources/test_pushdown.csv"
     path = Path(get_settings().data_root) / relative
     path.parent.mkdir(parents=True, exist_ok=True)
 

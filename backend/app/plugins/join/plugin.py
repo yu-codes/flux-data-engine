@@ -78,6 +78,16 @@ class JoinPlugin:
                         ),
                     ),
                     FieldSpec(
+                        "columns",
+                        FieldType.ARRAY,
+                        required=False,
+                        description=(
+                            "which columns to take from the second table; the "
+                            "keys are always kept. Empty means all of them"
+                        ),
+                        item=FieldSpec(name="column", type=FieldType.STRING),
+                    ),
+                    FieldSpec(
                         "suffix",
                         FieldType.STRING,
                         required=False,
@@ -132,6 +142,22 @@ class JoinPlugin:
                 f"a join needs a second table wired in as '{RIGHT_INPUT}'"
             )
 
+        wanted = [str(column) for column in (config.get("columns") or [])]
+        if wanted:
+            #  Take what was asked for and nothing else. A reference table
+            #  usually has a dozen columns the caller does not want, and two
+            #  joins against two such tables collide on the same suffixed
+            #  name — after which Arrow refuses the whole table with
+            #  "multiple matches for FieldRef". Narrowing here rather than
+            #  dropping afterwards also means the join carries less.
+            missing = [c for c in wanted if c not in right.columns]
+            if missing:
+                raise ValidationError(
+                    f"the '{RIGHT_INPUT}' table has no {missing}",
+                    details={"available": sorted(right.columns)},
+                )
+            right = right.select(list(dict.fromkeys([*keys, *wanted])))
+
         missing_left = [k for k in keys if k not in left.columns]
         missing_right = [k for k in keys if k not in right.columns]
         if missing_left or missing_right:
@@ -169,6 +195,7 @@ class JoinPlugin:
         context.log(
             f"{left.num_rows} rows joined with {right.num_rows} on "
             f"{keys} ({how}) -> {table.num_rows}"
+            + (f", taking {wanted}" if wanted else "")
         )
 
         return ExecutionOutcome(

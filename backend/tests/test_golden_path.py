@@ -26,7 +26,7 @@ SALES_ROWS = [
 @pytest.fixture(scope="module")
 def sales_csv() -> str:
     settings = get_settings()
-    relative = "samples/test_sales.csv"
+    relative = "Demo/sources/test_sales.csv"
     path = Path(settings.data_root) / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:

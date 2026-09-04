@@ -25,7 +25,7 @@ LINE = [{"x": float(i), "y": 3.0 * i + 5.0} for i in range(1, 11)]
 @pytest.fixture(scope="module")
 def line_dataset(client, api) -> str:
     settings = get_settings()
-    relative = "samples/test_line.csv"
+    relative = "Demo/sources/test_line.csv"
     path = Path(settings.data_root) / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:

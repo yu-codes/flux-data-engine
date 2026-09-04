@@ -105,6 +105,19 @@ class Settings(BaseSettings):
     outbound_allow_private: bool = False
     outbound_allowed_hosts: list[str] = Field(default_factory=list)
 
+    # -- language models ---------------------------------------------------
+    #  An OpenAI-compatible chat-completions endpoint. Empty is the default and
+    #  is not a degraded mode: a provider that reasons over evidence must be
+    #  able to answer without one, or the platform would depend on a network
+    #  service to explain its own conclusions.
+    llm_endpoint: str = ""
+    llm_api_key: str = ""
+    llm_model: str = "gpt-4o-mini"
+    llm_timeout_seconds: int = 60
+    #  Reasoning is grounded in evidence the platform assembled, so a long
+    #  answer is a sign of invention rather than of thoroughness.
+    llm_max_tokens: int = 1200
+
     # -- observability -----------------------------------------------------
     metrics_enabled: bool = True
     audit_enabled: bool = True

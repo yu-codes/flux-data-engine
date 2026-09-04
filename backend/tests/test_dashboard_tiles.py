@@ -24,7 +24,7 @@ ROWS = [
 @pytest.fixture(scope="module")
 def version_id(client, api) -> str:
     settings = get_settings()
-    relative = "samples/test_tiles.csv"
+    relative = "Demo/sources/test_tiles.csv"
     path = Path(settings.data_root) / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:

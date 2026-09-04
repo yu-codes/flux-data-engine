@@ -46,6 +46,8 @@ export interface Source {
   connection: Record<string, unknown>
   description: string
   created_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface DatasetVersion {
@@ -70,6 +72,8 @@ export interface Dataset {
   current_version_id: string | null
   created_at: string
   updated_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface DatasetDetail extends Dataset {
@@ -149,6 +153,8 @@ export interface ModelDefinition {
   current_version_id: string | null
   created_at: string
   updated_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface ModelVersion {
@@ -189,6 +195,8 @@ export interface Execution {
   created_at: string
   started_at: string | null
   finished_at: string | null
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface ResultRecord {
@@ -203,6 +211,8 @@ export interface ResultRecord {
   row_count: number | null
   is_materialised: boolean
   created_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 /** One thing being compared: a runnable, configured a particular way. */
@@ -267,6 +277,8 @@ export interface Experiment {
   model_ids: string[]
   execution_ids: string[]
   created_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface LeaderboardRow {
@@ -305,6 +317,8 @@ export interface Evaluation {
   passed: boolean | null
   notes: string
   created_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface ChartSpec {
@@ -333,6 +347,8 @@ export interface Visualization {
   dataset_version_id: string | null
   result_id: string | null
   created_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface ChartData {
@@ -374,6 +390,8 @@ export interface Dashboard {
   description: string
   tiles: { visualization_id: string; x: number; y: number; width: number; height: number }[]
   created_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface RenderedDashboard {
@@ -647,6 +665,8 @@ export interface Pipeline {
   last_run_status: string | null
   created_at: string
   updated_at: string
+  /** Where it is filed. Null means shared: it shows under every project. */
+  project_id: string | null
 }
 
 export interface StepRun {
@@ -728,6 +748,34 @@ export interface Workspace {
   updated_at: string
 }
 
+/**
+ * A piece of work, and the directory its source files live in.
+ *
+ * A workspace is a boundary — it says who may see what. A project is a filing
+ * system inside one: it decides which of your own things a page lists, so
+ * fifty datasets across five unrelated efforts stay legible.
+ */
+export interface Project {
+  id: string
+  workspace_id: string | null
+  name: string
+  slug: string
+  description: string
+  directory: string
+  sources_path: string
+  uploads_path: string
+  is_default: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** What a project holds, per kind of resource. Read before offering a delete. */
+export interface ProjectHoldings {
+  project_id: string
+  holds: Record<string, number>
+}
+
 export interface WorkspaceMember {
   id: string
   workspace_id: string
@@ -752,4 +800,222 @@ export interface Job {
   finished_at: string | null
   created_at: string
   updated_at: string
+}
+
+// -- the built-in asset-maintenance application -----------------------------
+/**
+ * A maintenance decision. Deliberately flat: the fleet table, the detail
+ * header and the report all read the same object, so what a decision *is*
+ * is answerable by reading one type.
+ */
+export interface MaintenanceDecision {
+  asset_id: string
+  asset_name: string
+  asset_type: string
+  asset_type_label: string | null
+  site_id: string
+  site_name: string | null
+  location: string | null
+  criticality: string
+  assessed_at: string
+  policy: string
+  maintenance_required: boolean
+  priority: string
+  health_score: number | null
+  health_status: string
+  health_coverage: number
+  risk_level: string | null
+  likelihood: string
+  consequence: string
+  concern_score: number
+  confidence: number
+  recommended_action: string
+  suspected_failure_mode: string | null
+  window_start: string | null
+  window_end: string | null
+  window_basis: string
+  window_reason: string
+  evidence_count: number
+  worst_status: string
+  data_quality_score: number | null
+  data_quality_flag: string | null
+  observed_days: number | null
+  interval_usage_pct: number | null
+  runtime_hours: number | null
+  reasons: string
+  measurements?: number
+  worst_measurement?: {
+    parameter: string
+    label: string
+    unit: string
+    value: number | null
+    expected: number | null
+    limit_progress_pct: number | null
+    status: string
+  } | null
+}
+
+export interface MaintenanceFinding {
+  asset_id: string
+  asset_name: string
+  assessed_at: string
+  policy: string
+  analyzer: string
+  category: string
+  statement: string
+  weight: number
+  confidence: number
+  contribution: number
+  parameter: string | null
+  failure_mode: string | null
+  action: string | null
+  risk_level?: string | null
+  health_score?: number | null
+  recommended_action?: string
+}
+
+export interface MaintenanceMeasurement {
+  parameter: string
+  parameter_label: string
+  unit: string
+  day: string
+  value: number | null
+  expected: number | null
+  deviation_pct: number | null
+  limit_progress_pct: number | null
+  trend_per_day: number | null
+  trend_fit: number | null
+  status: string
+  rank: number
+  warning: number | null
+  critical: number | null
+  emergency: number | null
+  direction: string
+  quality_score: number | null
+  quality_issues: string
+}
+
+export interface MaintenanceFleet {
+  as_of: string
+  policy: string
+  policy_label: string
+  total: number
+  sites: string[]
+  summary: {
+    assets: number
+    maintenance_required: number
+    by_risk: Record<string, number>
+    by_health: Record<string, number>
+    by_priority: Record<string, number>
+    by_criticality: Record<string, number>
+    mean_health: number | null
+    worst_health: number | null
+    suspect_data: number
+  }
+  assets: MaintenanceDecision[]
+}
+
+export interface MaintenanceTimelineEntry {
+  at: string
+  kind: string
+  title: string
+  detail: string
+  severity: string
+  extra: Record<string, unknown>
+}
+
+export interface MaintenanceAssetDetail {
+  asset: Record<string, unknown>
+  as_of: string
+  policy: string
+  policy_label?: string
+  decision: MaintenanceDecision | null
+  message?: string
+  health?: {
+    score: number | null
+    status: string
+    coverage: number
+    components: {
+      name: string
+      source: string
+      value: unknown
+      weight: number
+      score: number | null
+      reason: string
+      description: string
+      contribution?: number
+      share?: number
+    }[]
+  }
+  risk?: {
+    level: string | null
+    likelihood: string
+    consequence: string
+    basis: string
+    concern: number
+  }
+  window?: { start: string | null; end: string | null; basis: string; reason: string }
+  measurements?: MaintenanceMeasurement[]
+  evidence?: MaintenanceFinding[]
+  data_quality?: Record<string, unknown>
+  features?: Record<string, unknown>
+  policies?: Record<string, unknown>[]
+  maintenance?: Record<string, unknown>[]
+  failures?: Record<string, unknown>[]
+  timeline?: MaintenanceTimelineEntry[]
+}
+
+export interface MaintenanceSeriesPoint {
+  day: string
+  value: number | null
+  high: number | null
+  low: number | null
+  expected: number | null
+  warning: number | null
+  critical: number | null
+  emergency: number | null
+  status: string
+  progress: number | null
+  load_pct: number | null
+  ambient_c: number | null
+  samples: number | null
+}
+
+export interface MaintenanceSeries {
+  asset_id: string
+  asset_name: string | null
+  parameter: string
+  parameter_label: string
+  unit: string
+  direction: string
+  available: { parameter: string; label: string }[]
+  points: MaintenanceSeriesPoint[]
+  events: { at: string; kind: string; label: string }[]
+}
+
+export interface MaintenanceCatalogue {
+  analyzers: { key: string; label: string; category: string; description: string }[]
+  policies: {
+    key: string
+    label: string
+    description: string
+    analyzers: string[]
+    criticality_adjusted: boolean
+  }[]
+  default_policy: string
+  latest_day: string
+  asset_types: {
+    key: string
+    label: string
+    measurements: { parameter: string; label: string; unit: string; direction: string }[]
+    failure_modes: {
+      key: string
+      label: string
+      symptom: string
+      root_cause: string
+      action: string
+      severity: string
+    }[]
+    policies: { task: string; interval_hours?: number; interval_days?: number; kind: string }[]
+  }[]
 }

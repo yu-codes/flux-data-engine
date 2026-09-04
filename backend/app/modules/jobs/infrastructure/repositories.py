@@ -21,7 +21,7 @@ class SqlJobRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, job: Job) -> Job:
-        self.session.add(self._stamp(orm.to_row(job)))
+        self.session.add(self._stamp(orm.to_row(self._file(job))))
         self.session.flush()
         return job
 

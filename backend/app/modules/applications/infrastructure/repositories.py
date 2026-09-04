@@ -20,7 +20,7 @@ class SqlApplicationRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, application: Application) -> Application:
-        self.session.add(self._stamp(orm.application_to_row(application)))
+        self.session.add(self._stamp(orm.application_to_row(self._file(application))))
         self.session.flush()
         return application
 
@@ -30,14 +30,14 @@ class SqlApplicationRepository(WorkspaceScoped):
 
     def get_by_slug(self, slug: str) -> Application | None:
         row = self.session.scalar(
-            self._scoped(select(orm.ApplicationRow), orm.ApplicationRow)
+            self._named(select(orm.ApplicationRow), orm.ApplicationRow)
             .where(orm.ApplicationRow.slug == slug)
         )
         return orm.application_to_entity(row) if row else None
 
     def get_by_name(self, name: str) -> Application | None:
         row = self.session.scalar(
-            self._scoped(select(orm.ApplicationRow), orm.ApplicationRow)
+            self._named(select(orm.ApplicationRow), orm.ApplicationRow)
             .where(orm.ApplicationRow.name == name)
         )
         return orm.application_to_entity(row) if row else None

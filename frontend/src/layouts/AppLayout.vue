@@ -23,47 +23,119 @@
         <q-space />
 
         <!--
-          Which workspace you are looking at, and how to change it. Beside the
-          account menu because "who am I" and "where am I" are the same
-          question asked twice, and a page that shows one namespace's contents
-          without saying which one is how people lose work.
+          Where you are: which workspace, and which project inside it.
 
-          Hidden when there is only the default: a chooser with one choice is
-          furniture.
+          Deliberately not a button. This is product context — the answer to
+          "which of my pieces of work am I looking at" — and the first cut of
+          it (a filled, bordered pill with a folder icon) carried more visual
+          weight than the page title it sat above. Icon plus border plus fill
+          is three ways of saying the same thing; the name and a small caret
+          say it once, and the background appears on hover, where an
+          affordance belongs.
+
+          The workspace half appears only when there is more than one: a
+          chooser with one choice is furniture. The slash between them is the
+          relationship — a project lives inside a workspace.
         -->
-        <q-btn
-          v-if="workspaces.length > 1"
-          dense
-          flat
-          no-caps
-          icon="workspaces"
-          :label="currentWorkspace?.name ?? 'Workspace'"
-          class="shell__workspace"
-        >
-          <q-menu>
-            <q-list style="min-width: 240px">
-              <q-item-label header class="q-pb-none">Workspace</q-item-label>
+        <div class="scope">
+          <q-btn
+            v-if="workspaces.length > 1"
+            flat
+            no-caps
+            class="scope__btn"
+            data-testid="workspace-switcher"
+          >
+            <span class="scope__name">{{ currentWorkspace?.name ?? 'Workspace' }}</span>
+            <q-icon name="expand_more" size="16px" class="scope__caret" />
+            <q-tooltip :delay="400">Switch workspace</q-tooltip>
+            <q-menu class="scope__menu" :offset="[0, 12]">
+              <div class="scope__heading">Workspaces</div>
+              <q-list class="scope__list">
+                <q-item
+                  v-for="workspace in workspaces"
+                  :key="workspace.id"
+                  clickable
+                  v-close-popup
+                  class="scope__option"
+                  :class="{ 'scope__option--current': workspace.id === currentWorkspaceId }"
+                  @click="switchWorkspace(workspace)"
+                >
+                  <q-item-section>
+                    <q-item-label class="scope__option-name">{{ workspace.name }}</q-item-label>
+                    <q-item-label caption class="scope__option-note">
+                      {{ workspace.is_default ? 'the default' : workspace.description || '—' }}
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section v-if="workspace.id === currentWorkspaceId" side>
+                    <q-icon name="check" size="16px" />
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
+
+          <span v-if="workspaces.length > 1" class="scope__slash">/</span>
+
+          <q-btn flat no-caps class="scope__btn" data-testid="project-switcher">
+            <span class="scope__name">{{ currentProject?.name ?? 'Project' }}</span>
+            <q-icon name="expand_more" size="16px" class="scope__caret" />
+            <q-tooltip :delay="400">Switch project</q-tooltip>
+            <q-menu class="scope__menu" :offset="[0, 12]">
+              <div class="scope__heading">Projects</div>
+              <q-list class="scope__list">
+                <q-item
+                  v-for="project in projects"
+                  :key="project.id"
+                  clickable
+                  v-close-popup
+                  class="scope__option"
+                  :class="{ 'scope__option--current': project.id === currentProjectId }"
+                  @click="switchProject(project)"
+                >
+                  <q-item-section>
+                    <q-item-label class="scope__option-name">
+                      {{ project.name }}
+                      <span v-if="project.is_default" class="scope__default">default</span>
+                    </q-item-label>
+                    <q-item-label caption class="scope__option-note">
+                      {{ project.description || `data/${project.directory}/` }}
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section v-if="project.id === currentProjectId" side>
+                    <q-icon name="check" size="16px" />
+                  </q-item-section>
+                </q-item>
+              </q-list>
+              <q-separator />
+              <!--
+                Starting a piece of work is the other thing somebody opens this
+                for, so it is here rather than only on the page. Both routes
+                land on the same page — the form lives in one place.
+              -->
               <q-item
-                v-for="workspace in workspaces"
-                :key="workspace.id"
                 clickable
                 v-close-popup
-                :active="workspace.id === currentWorkspaceId"
-                @click="switchWorkspace(workspace)"
+                class="scope__action"
+                :to="{ name: 'projects', query: { new: '1' } }"
               >
                 <q-item-section>
-                  <q-item-label>{{ workspace.name }}</q-item-label>
-                  <q-item-label caption class="fx-meta">
-                    {{ workspace.is_default ? 'the default' : workspace.description }}
-                  </q-item-label>
-                </q-item-section>
-                <q-item-section v-if="workspace.id === currentWorkspaceId" side>
-                  <q-icon name="check" size="18px" />
+                  <span class="scope__action-line">
+                    <q-icon name="add" size="16px" />
+                    New project
+                  </span>
                 </q-item-section>
               </q-item>
-            </q-list>
-          </q-menu>
-        </q-btn>
+              <q-item clickable v-close-popup class="scope__action" :to="{ name: 'projects' }">
+                <q-item-section>
+                  <span class="scope__action-line">
+                    <q-icon name="settings" size="16px" />
+                    Manage projects
+                  </span>
+                </q-item-section>
+              </q-item>
+            </q-menu>
+          </q-btn>
+        </div>
 
         <q-btn dense flat round :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'" @click="toggleTheme" />
 
@@ -154,9 +226,9 @@ import { useQuasar } from 'quasar'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { auth as authApi, workspaces as workspacesApi } from '@/api'
-import { getWorkspace, setWorkspace } from '@/api/client'
-import type { Workspace } from '@/types'
+import { auth as authApi, projects as projectsApi, workspaces as workspacesApi } from '@/api'
+import { getProject, getWorkspace, setProject, setWorkspace } from '@/api/client'
+import type { Project, Workspace } from '@/types'
 import { useAuthStore } from '@/stores/auth'
 
 const $q = useQuasar()
@@ -208,17 +280,24 @@ const navigation = [
       { name: 'executions', label: 'Executions', icon: 'play_circle' },
       { name: 'results', label: 'Results', icon: 'output' },
       { name: 'evaluation', label: 'Evaluation', icon: 'rule' },
-      { name: 'reports', label: 'Reports', icon: 'description' },
     ],
   },
   {
+    //  What the platform delivers on a standing basis. Reports and Schedules
+    //  sit here rather than beside Results and the system pages: each is
+    //  self-contained — a report cites resources by id, a schedule names a
+    //  runnable — so neither needs a project chosen first.
     label: 'Applications',
-    items: [{ name: 'applications', label: 'All applications', icon: 'apps' }],
+    items: [
+      { name: 'applications', label: 'All applications', icon: 'apps' },
+      { name: 'reports', label: 'Reports', icon: 'description' },
+      { name: 'schedules', label: 'Schedules', icon: 'schedule' },
+    ],
   },
   {
     label: 'System',
     items: [
-      { name: 'schedules', label: 'Schedules', icon: 'schedule' },
+      { name: 'projects', label: 'Projects', icon: 'folder_special' },
       { name: 'users', label: 'Users', icon: 'group', permission: 'platform:admin' },
       { name: 'audit', label: 'Audit', icon: 'history' },
       { name: 'settings', label: 'Settings', icon: 'settings' },
@@ -307,11 +386,79 @@ async function loadWorkspaces() {
   }
 }
 
+const projects = ref<Project[]>([])
+const currentProjectId = ref<string | null>(getProject())
+
+const currentProject = computed(
+  () =>
+    projects.value.find((p) => p.id === currentProjectId.value) ??
+    projects.value.find((p) => p.is_default) ??
+    null,
+)
+
+/**
+ * Change project, then reload — for the same reason switching workspace does.
+ *
+ * The stored value is the id even for the default, unlike the workspace: a
+ * workspace is a boundary and "none" means the default one, but a project is
+ * a filing system where "none" means unfiled, and unfiled resources show
+ * under every project. Naming the default explicitly keeps the two apart.
+ */
+function switchProject(project: Project) {
+  if (project.id === currentProjectId.value) return
+  setProject(project.id)
+  window.location.reload()
+}
+
+async function loadProjects() {
+  if (auth.authEnabled && !auth.user) return
+  try {
+    projects.value = await projectsApi.list()
+    const known = projects.value.some((p) => p.id === currentProjectId.value)
+    if (!known) {
+      //  Either nothing was chosen yet, or what was chosen has been deleted.
+      //  Both land on the default, which always exists.
+      const fallback = projects.value.find((p) => p.is_default) ?? projects.value[0] ?? null
+      setProject(fallback?.id ?? null)
+      currentProjectId.value = fallback?.id ?? null
+    }
+  } catch {
+    projects.value = []
+  }
+}
+
+/**
+ * Both lists, in order: the project list is a list of *that* workspace's
+ * projects, so asking for it before the workspace is settled lists the wrong
+ * ones.
+ */
+async function loadScopes() {
+  await loadWorkspaces()
+  await loadProjects()
+}
+
 onMounted(() => {
   const stored = localStorage.getItem('flux-dark')
   if (stored !== null) $q.dark.set(stored === 'true')
-  loadWorkspaces()
+  loadScopes()
 })
+
+/**
+ * Load again when somebody signs in.
+ *
+ * The shell mounts around the sign-in page too, so on a cold start both loads
+ * run before there is anyone to load for, take the `!auth.user` exit, and —
+ * without this — never run again: the layout is not remounted by signing in,
+ * so the switchers stayed empty for the rest of the session. It was invisible
+ * while the workspace chooser hid itself at one workspace; the project
+ * chooser is always shown, so it showed the hole.
+ */
+watch(
+  () => auth.user?.id,
+  (id, before) => {
+    if (id && id !== before) loadScopes()
+  },
+)
 </script>
 
 <style scoped>
@@ -349,5 +496,145 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+/*
+ * The scope control: where you are.
+ *
+ * Context, not a control — so it is transparent at rest and only takes a
+ * background on hover, where an affordance belongs. The first cut was a
+ * filled, bordered pill with a folder icon, which put three ways of saying
+ * "this is a button" next to a page title that says its thing once, and read
+ * heavier than anything else in the chrome. The name carries it; the caret
+ * says it opens.
+ *
+ * The header is `bg-dark` in both themes, so these are white alphas rather
+ * than tokens: no theme branching, because there is only ever one background.
+ */
+.scope {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-1);
+  min-width: 0;
+  max-width: 42vw;
+}
 
+.scope__btn {
+  min-height: 32px;
+  padding: 0 var(--fx-space-2);
+  border-radius: var(--fx-radius-sm);
+  font-size: var(--fx-text-base);
+  font-weight: 500;
+  letter-spacing: 0;
+  min-width: 0;
+}
+
+/*  Quasar paints a hover state through a ::before overlay; this is the same
+    idea at the weight the toolbar wants. */
+.scope__btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Quasar centres button content; this lays it out as name-then-caret. */
+.scope__btn :deep(.q-btn__content) {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--fx-space-1);
+  min-width: 0;
+}
+
+.scope__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scope__caret {
+  opacity: 0.55;
+  flex: none;
+}
+
+.scope__slash {
+  opacity: 0.3;
+  flex: none;
+}
+
+/* -- the menu ------------------------------------------------------------ */
+.scope__heading {
+  padding: var(--fx-space-3) var(--fx-space-4) var(--fx-space-1);
+  font-size: var(--fx-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: var(--fx-ink-muted);
+}
+
+.scope__list {
+  min-width: 268px;
+  max-width: 340px;
+  padding-bottom: var(--fx-space-1);
+}
+
+.scope__option {
+  min-height: 0;
+  padding: var(--fx-space-2) var(--fx-space-4);
+}
+
+/*  A left rule rather than Quasar's `active` fill: the app has one accent and
+    it belongs to primary actions, not to "you are here". */
+.scope__option--current {
+  box-shadow: inset 2px 0 0 currentColor;
+  background: var(--fx-surface-muted);
+}
+
+.scope__option-name {
+  font-size: var(--fx-text-base);
+  font-weight: 600;
+}
+
+.scope__option-note {
+  font-size: var(--fx-text-xs);
+  opacity: var(--fx-ink-muted);
+  /*  One line: a description is a hint here, not the content. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scope__default {
+  margin-left: var(--fx-space-2);
+  font-size: var(--fx-text-xs);
+  font-weight: 500;
+  opacity: var(--fx-ink-faint);
+}
+
+.scope__action {
+  min-height: 0;
+  padding: var(--fx-space-2) var(--fx-space-4);
+  font-size: var(--fx-text-sm);
+}
+
+.scope__action:first-of-type {
+  padding-top: var(--fx-space-3);
+}
+
+.scope__action-line {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  opacity: var(--fx-ink);
+}
+
+/*  Below the phone breakpoint the brand and the scope cannot both have the
+    row. The scope wins: which project you are in changes what every page
+    says, and the product name does not. */
+@media (max-width: 599px) {
+  .shell__brand {
+    display: none;
+  }
+
+  .scope {
+    max-width: 60vw;
+  }
+}
 </style>

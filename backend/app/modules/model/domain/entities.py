@@ -28,6 +28,11 @@ class ModelType(str, Enum):
     OPTIMIZATION = "optimization"
     SIMULATION = "simulation"
     FORMULA = "formula"
+    #  A model whose computation is a language model's reasoning over evidence
+    #  the platform assembled. It is a category rather than a special case:
+    #  it is versioned, executed, compared and traced like every other, and
+    #  `test_model_type_coverage.py` requires it to have a provider.
+    LLM = "llm"
     CUSTOM = "custom"
 
 
@@ -92,6 +97,10 @@ class ModelDefinition:
     #  a trip through the audit log.
     created_by: str | None = None
     workspace_id: str | None = None
+    #  Which project this is filed under. Null means it is not filed and
+    #  shows in every project — a deliberately shared model, or a run the
+    #  scheduler made without standing anywhere.
+    project_id: str | None = None
     updated_at: datetime = field(default_factory=utcnow)
 
     def __post_init__(self) -> None:

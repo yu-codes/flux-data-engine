@@ -53,6 +53,9 @@ class VisualizationOut(ApiModel):
     dataset_version_id: str | None
     result_id: str | None
     created_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class DashboardCreate(ApiModel):
@@ -73,6 +76,9 @@ class DashboardOut(ApiModel):
     description: str
     tiles: list[dict[str, Any]]
     created_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class TileCreate(ApiModel):
@@ -273,6 +279,7 @@ def _viz_out(entity) -> VisualizationOut:
         dataset_version_id=entity.dataset_version_id,
         result_id=entity.result_id,
         created_at=entity.created_at,
+           project_id=entity.project_id,
     )
 
 
@@ -283,4 +290,5 @@ def _dash_out(entity) -> DashboardOut:
         description=entity.description,
         tiles=[t.to_dict() for t in entity.tiles],
         created_at=entity.created_at,
+           project_id=entity.project_id,
     )

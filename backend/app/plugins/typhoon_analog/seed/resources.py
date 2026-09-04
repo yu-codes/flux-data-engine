@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from app.plugins.fixtures import Fixture
 
-from ..paths import SUBDIRECTORY
+from ..paths import PROJECT, SUBDIRECTORY
 from .climatology import DASHBOARDS
 
 DATASET = "Taiwan typhoon catalogue"
@@ -34,6 +34,18 @@ def fixture() -> Fixture:
     """The resources this application ships with."""
     return Fixture(
         source="typhoon_analog",
+        #  The piece of work all of this belongs to. The core does not know
+        #  this name — a general platform must not — so the application that
+        #  is this work declares it, and its directory is the one the plugin
+        #  already ships its files under.
+        project={
+            "name": PROJECT,
+            "directory": PROJECT,
+            "description": (
+                "颱風路徑類比預測：CWA 與 IBTrACS 的歷史紀錄、氣候分析與"
+                "類比方法的驗證。"
+            ),
+        },
         sources=[
             {
                 "name": "Taiwan typhoon overview",

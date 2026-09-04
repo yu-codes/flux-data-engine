@@ -44,6 +44,14 @@ _TIMESTAMP_FORMATS = (
 
 def as_number(value: Any) -> float | None:
     """The number in a value, or None. Tolerates thousands separators."""
+    #  The overwhelmingly common case, checked first and exactly. Arrow hands
+    #  back real floats, and every windowed or aggregating transform calls this
+    #  once per value it reads - so the isinstance chain below was several
+    #  seconds of type checking on a table of a few hundred thousand rows.
+    #  `value != value` is true only for NaN, which is what math.isnan says
+    #  without a call and without re-converting a float to a float.
+    if value.__class__ is float:
+        return None if value != value else value
     if isinstance(value, bool) or value is None:
         return None
     if isinstance(value, (int, float)):
@@ -62,6 +70,20 @@ def as_datetime(value: Any) -> datetime | None:
     if not isinstance(value, str) or not value.strip():
         return None
     text = value.strip()
+    #  ISO is what the platform itself writes - `column_values` renders every
+    #  temporal column that way - so it is the overwhelmingly common case and
+    #  the one the format loop handled worst: "2026-08-30" only matched on the
+    #  fourth attempt, so three failed `strptime` calls were paid for every
+    #  date read. `fromisoformat` is implemented in C and answers in one.
+    #
+    #  Guarded on the shape rather than tried unconditionally, because 3.11's
+    #  `fromisoformat` also accepts the basic form ("20260830"), and a column
+    #  of eight-digit codes must keep reading as codes.
+    if len(text) >= 10 and text[4] == "-" and text[7] == "-":
+        try:
+            return datetime.fromisoformat(text)
+        except ValueError:
+            pass
     for fmt in _TIMESTAMP_FORMATS:
         try:
             return datetime.strptime(text, fmt)

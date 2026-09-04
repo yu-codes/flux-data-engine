@@ -98,6 +98,9 @@ class ExperimentOut(ApiModel):
     model_ids: list[str]
     execution_ids: list[str]
     created_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class CompareIn(ApiModel):
@@ -127,6 +130,9 @@ class EvaluationOut(ApiModel):
     passed: bool | None
     notes: str
     created_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class LeaderboardRow(ApiModel):
@@ -328,6 +334,7 @@ def _experiment_out(experiment) -> ExperimentOut:
         model_ids=experiment.model_ids,
         execution_ids=experiment.execution_ids,
         created_at=experiment.created_at,
+        project_id=experiment.project_id,
     )
 
 
@@ -342,4 +349,5 @@ def _evaluation_out(evaluation) -> EvaluationOut:
         passed=evaluation.passed,
         notes=evaluation.notes,
         created_at=evaluation.created_at,
+        project_id=evaluation.project_id,
     )

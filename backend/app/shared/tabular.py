@@ -74,6 +74,32 @@ class Table:
         return cls(pa.table(data))
 
     @classmethod
+    def from_columns(cls, columns: Mapping[str, Sequence[Any]]) -> Table:
+        """Build a table from whole columns, without inventing a row per row.
+
+        `from_rows` is the boundary constructor: it exists because external
+        formats arrive as records. A transform that has already computed its
+        answer column-wise has no records to offer, and building some in order
+        to have them read back immediately is the exact cost the columnar
+        rewrite removed. Reshaping and time-series transforms produce columns,
+        so they should be able to say so.
+        """
+        data = dict(columns)
+        lengths = {len(values) for values in data.values()}
+        if len(lengths) > 1:
+            raise ValueError(f"columns have differing lengths: {sorted(lengths)}")
+        if not data:
+            return cls(pa.table({}))
+        return cls(
+            pa.table(
+                {
+                    name: _to_array([_normalise(v) for v in values])
+                    for name, values in data.items()
+                }
+            )
+        )
+
+    @classmethod
     def from_pandas(cls, frame) -> Table:
         return cls(pa.Table.from_pandas(frame, preserve_index=False))
 
@@ -231,7 +257,15 @@ class Table:
         """
         if column not in self.arrow.column_names:
             return [None] * self.num_rows
-        return [_jsonable(v) for v in self.arrow.column(column).to_pylist()]
+        values = self.arrow.column(column).to_pylist()
+        if _needs_no_conversion(self.arrow.schema.field(column).type):
+            #  Arrow already hands back str, int, float, bool and None for
+            #  these, so the per-value pass exists only to convert types that
+            #  cannot occur in them. On a table of a few hundred thousand rows
+            #  that pass is several seconds of doing nothing, paid by every
+            #  transform that reads a column.
+            return values
+        return [_jsonable(v) for v in values]
 
     # -- persistence -------------------------------------------------------
     def write_parquet(self, path: str | Path) -> Path:
@@ -280,6 +314,24 @@ def _normalise(value: Any) -> Any:
     if isinstance(value, (dict, list, tuple)):
         return value
     return value
+
+
+#  Types whose `to_pylist()` output is already JSON-shaped. Deliberately a
+#  narrow list: temporal, decimal, struct, map and list types all need the
+#  conversion, and adding one here that does would return Arrow objects to
+#  callers expecting plain Python.
+_PLAIN_ARROW_TYPES = (
+    pa.types.is_boolean,
+    pa.types.is_integer,
+    pa.types.is_floating,
+    pa.types.is_string,
+    pa.types.is_large_string,
+    pa.types.is_null,
+)
+
+
+def _needs_no_conversion(arrow_type: pa.DataType) -> bool:
+    return any(predicate(arrow_type) for predicate in _PLAIN_ARROW_TYPES)
 
 
 def _jsonable_row(row: dict) -> dict:

@@ -65,6 +65,9 @@ class ExecutionOut(ApiModel):
     created_at: datetime
     started_at: datetime | None
     finished_at: datetime | None
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 @router.get("/execution-kinds", summary="Every kind of execution the platform runs")
@@ -160,4 +163,5 @@ def _out(execution: Execution) -> ExecutionOut:
         created_at=execution.created_at,
         started_at=execution.started_at,
         finished_at=execution.finished_at,
+        project_id=execution.project_id,
     )

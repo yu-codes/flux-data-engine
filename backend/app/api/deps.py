@@ -40,6 +40,7 @@ from app.modules.orchestration.application.services import PipelineService
 from app.modules.platform.application.api_keys import ApiKeyService
 from app.modules.platform.application.audit import AuditService
 from app.modules.platform.application.auth import AuthorizationError, AuthService
+from app.modules.platform.application.projects import ProjectService
 from app.modules.platform.application.workspaces import WorkspaceService
 from app.modules.platform.infrastructure.api_key_repositories import (
     SqlApiKeyRepository,
@@ -78,6 +79,7 @@ __all__ = [
     "ScheduleServiceDep",
     "WorkspaceServiceDep",
     "ApiKeyServiceDep",
+    "ProjectServiceDep",
     "ScopeDep",
     "RegistryDep",
     "ObjectStoreDep",
@@ -86,7 +88,7 @@ __all__ = [
 
 
 def resolve_scope(request: Request, session: SessionDep) -> WorkspaceScope:
-    """Which workspace this request is acting in, and on whose behalf.
+    """Which workspace and project this request is acting in, and for whom.
 
     The workspace comes from the `X-Workspace` header - an id or a slug - and
     falls back to the installation's default. A header rather than a path
@@ -97,15 +99,26 @@ def resolve_scope(request: Request, session: SessionDep) -> WorkspaceScope:
     a workspace the caller is not in is refused rather than silently answered
     from the default, because quietly showing somebody the wrong workspace is
     worse than telling them no.
+
+    The project comes from `X-Project` the same way, and **falls back to no
+    project rather than to a default one**. The two axes differ here on
+    purpose: a request that names no workspace has to land in one, because
+    every row belongs to a workspace; a request that names no project is
+    asking about all of them, which is a question worth being able to ask.
     """
     workspaces = WorkspaceService(SqlWorkspaceRepository(session))
     requested = request.headers.get("X-Workspace")
+    project = request.headers.get("X-Project")
 
     #  A key names its own workspace, so it does not need a header and cannot
     #  be pointed at somebody else's by sending one.
     key = _presented_key(request, session)
     if key is not None:
-        return WorkspaceScope(workspace_id=key.workspace_id, user_id=key.id)
+        return _with_project(
+            WorkspaceScope(workspace_id=key.workspace_id, user_id=key.id),
+            session,
+            project,
+        )
 
     user = _caller(request, session)
 
@@ -115,9 +128,32 @@ def resolve_scope(request: Request, session: SessionDep) -> WorkspaceScope:
             raise AuthorizationError(
                 f"you are not a member of the '{workspace.name}' workspace"
             )
-    return WorkspaceScope(
-        workspace_id=workspace.id, user_id=getattr(user, "id", None)
+    return _with_project(
+        WorkspaceScope(workspace_id=workspace.id, user_id=getattr(user, "id", None)),
+        session,
+        project,
     )
+
+
+def _with_project(
+    scope: WorkspaceScope, session: Session, requested: str | None
+) -> WorkspaceScope:
+    """Attach the project the caller named, if it is one they can see.
+
+    A project that does not exist in this workspace is ignored rather than
+    refused. It is a filing system, and the honest answer to "show me a folder
+    that is not here" is everything, not an error - a stale id in somebody's
+    browser should not lock them out of the platform.
+    """
+    if not requested:
+        return scope
+    from app.modules.platform.infrastructure.project_repositories import (
+        SqlProjectRepository,
+    )
+
+    repository = SqlProjectRepository(session, scope)
+    project = repository.get(requested) or repository.get_by_slug(requested)
+    return scope.within(project.id) if project else scope
 
 
 def _presented_key(request: Request, session: Session):
@@ -247,6 +283,10 @@ def _api_keys(services: ServicesDep) -> ApiKeyService:
     return services.api_keys
 
 
+def _projects(services: ServicesDep) -> ProjectService:
+    return services.projects
+
+
 def _workspaces(services: ServicesDep) -> WorkspaceService:
     return services.workspaces
 
@@ -274,6 +314,7 @@ AuditServiceDep = Annotated[AuditService, Depends(_audit)]
 ScheduleServiceDep = Annotated[ScheduleService, Depends(_schedules)]
 JobServiceDep = Annotated[JobService, Depends(_jobs)]
 WorkspaceServiceDep = Annotated[WorkspaceService, Depends(_workspaces)]
+ProjectServiceDep = Annotated[ProjectService, Depends(_projects)]
 ApiKeyServiceDep = Annotated[ApiKeyService, Depends(_api_keys)]
 RegistryDep = Annotated[PluginRegistry, Depends(_plugin_registry)]
 ObjectStoreDep = Annotated[ObjectStore, Depends(_object_store)]

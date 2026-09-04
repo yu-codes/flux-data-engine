@@ -27,7 +27,13 @@ export const ROUTES = [
   ['evaluation', '/evaluation'],
   ['reports', '/reports'],
   ['applications', '/applications'],
+  //  The built-in applications have pages of their own, and a page nobody
+  //  checks is a page that breaks quietly. They were missing from this list
+  //  for exactly as long as the list has existed.
+  ['typhoon', '/applications/typhoon'],
+  ['asset-maintenance', '/applications/asset-maintenance'],
   ['schedules', '/schedules'],
+  ['projects', '/projects'],
   ['users', '/users'],
   ['audit', '/audit'],
   ['settings', '/settings'],

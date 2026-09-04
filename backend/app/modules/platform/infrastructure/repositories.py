@@ -19,7 +19,7 @@ class SqlUserRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, user: User) -> User:
-        self.session.add(self._stamp(orm.user_to_row(user)))
+        self.session.add(self._stamp(orm.user_to_row(self._file(user))))
         self.session.flush()
         return user
 
@@ -65,7 +65,7 @@ class SqlAuditRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, entry: AuditEntry) -> AuditEntry:
-        self.session.add(self._stamp(orm.audit_to_row(entry)))
+        self.session.add(self._stamp(orm.audit_to_row(self._file(entry))))
         self.session.flush()
         return entry
 

@@ -16,7 +16,7 @@ from app.core.config import get_settings
 
 @pytest.fixture(scope="module")
 def training_dataset(client, api) -> dict:
-    relative = "samples/test_training.csv"
+    relative = "Demo/sources/test_training.csv"
     path = Path(get_settings().data_root) / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     rng = random.Random(7)

@@ -20,7 +20,7 @@ ROWS = [
 
 @pytest.fixture(scope="module")
 def dataset(client, api) -> dict:
-    relative = "samples/test_pipeline.csv"
+    relative = "Demo/sources/test_pipeline.csv"
     path = Path(get_settings().data_root) / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:

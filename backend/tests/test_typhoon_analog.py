@@ -15,7 +15,7 @@ from app.plugins.typhoon_analog.paths import typhoon_data_dir
 
 pytestmark = pytest.mark.skipif(
     not (typhoon_data_dir() / "typhoons_overview.json").exists(),
-    reason="the typhoon dataset is not present in data/typhoon/preprocessed",
+    reason="the typhoon dataset is not present under the HydroAnalog project",
 )
 
 #  Three canonical CWA track shapes. Each should recover its own category from

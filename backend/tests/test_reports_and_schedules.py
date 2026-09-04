@@ -14,7 +14,7 @@ from app.core.config import get_settings
 @pytest.fixture(scope="module")
 def workspace(client, api) -> dict:
     """A dataset, a model and one succeeded execution to report on."""
-    relative = "samples/test_reports.csv"
+    relative = "Demo/sources/test_reports.csv"
     path = Path(get_settings().data_root) / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:

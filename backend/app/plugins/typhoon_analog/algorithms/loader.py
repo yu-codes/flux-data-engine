@@ -2,7 +2,7 @@
 數據加載模組
 職責：讀取統一資料源 typhoons_overview.json，提供統一的資料存取介面
 
-資料源（單一來源）：data/typhoon/preprocessed/typhoons_overview.json
+資料源（單一來源）：typhoons_overview.json（目錄由 `paths.py` 決定，呼叫端傳入）
   - 每筆颱風的軌跡位於 path.position_intensity
   - 事件降水位於 event_rain_tn / event_rain_kh（依地區）
   - 生成位置為 genesis_longitude / genesis_latitude
@@ -101,10 +101,14 @@ class DataLoader:
 
     def __init__(
         self,
-        processed_dir: str = "data/typhoon/preprocessed",
+        processed_dir: str | None = None,
         filename: str = DATASET_FILENAME,
     ):
-        self.processed_dir = Path(processed_dir)
+        #  No default path. Where this plugin's files live is `paths.py`'s
+        #  answer, and it moves when a project's directory is renamed; a
+        #  hard-coded default here would simply be wrong the first time that
+        #  happened. Absent means the caller will supply records instead.
+        self.processed_dir = Path(processed_dir) if processed_dir else None
         self.filename = filename
         self._records: list[TyphoonRecord] = []
         self._index: dict[str, TyphoonRecord] = {}
@@ -117,6 +121,11 @@ class DataLoader:
 
     def load(self) -> "DataLoader":
         """載入完整資料集（僅保留有軌跡且有路徑分類的颱風）"""
+        if self.processed_dir is None:
+            raise ValueError(
+                "this loader was built without a directory; "
+                "pass one, or use load_records()"
+            )
         path = self.processed_dir / self.filename
         if not path.exists():
             raise FileNotFoundError(f"找不到資料集：{path}")

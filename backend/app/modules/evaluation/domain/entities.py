@@ -105,6 +105,10 @@ class Experiment:
     #  a trip through the audit log.
     created_by: str | None = None
     workspace_id: str | None = None
+    #  Which project this is filed under. Null means it is not filed and
+    #  shows in every project — a deliberately shared model, or a run the
+    #  scheduler made without standing anywhere.
+    project_id: str | None = None
     updated_at: datetime = field(default_factory=utcnow)
 
     @property
@@ -133,5 +137,9 @@ class Evaluation:
     notes: str = ""
     model_id: str | None = None
     experiment_id: str | None = None
+    #  Which project this is filed under. Null means it is not filed and
+    #  shows in every project — a deliberately shared model, or a run the
+    #  scheduler made without standing anywhere.
+    project_id: str | None = None
     id: str = field(default_factory=lambda: new_id("eval"))
     created_at: datetime = field(default_factory=utcnow)

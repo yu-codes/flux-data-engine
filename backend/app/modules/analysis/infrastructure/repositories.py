@@ -20,7 +20,7 @@ class SqlVisualizationRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, visualization: Visualization) -> Visualization:
-        self.session.add(self._stamp(orm.visualization_to_row(visualization)))
+        self.session.add(self._stamp(orm.visualization_to_row(self._file(visualization))))
         self.session.flush()
         return visualization
 
@@ -57,7 +57,7 @@ class SqlDashboardRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, dashboard: Dashboard) -> Dashboard:
-        self.session.add(self._stamp(orm.dashboard_to_row(dashboard)))
+        self.session.add(self._stamp(orm.dashboard_to_row(self._file(dashboard))))
         self.session.flush()
         return dashboard
 
@@ -67,7 +67,7 @@ class SqlDashboardRepository(WorkspaceScoped):
 
     def get_by_name(self, name: str) -> Dashboard | None:
         row = self.session.scalar(
-            self._scoped(select(orm.DashboardRow), orm.DashboardRow)
+            self._named(select(orm.DashboardRow), orm.DashboardRow)
             .where(orm.DashboardRow.name == name)
         )
         return orm.dashboard_to_entity(row) if row else None

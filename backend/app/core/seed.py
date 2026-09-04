@@ -27,6 +27,10 @@ from app.core.container import Services, build_services
 from app.modules.execution.domain.ports import RunInline
 from app.modules.model.domain.registry import registry
 from app.modules.platform.application.workspaces import WorkspaceService
+from app.modules.platform.domain.projects import (
+    DEFAULT_PROJECT_NAME,
+    SOURCES_SUBDIRECTORY,
+)
 from app.modules.platform.infrastructure.workspace_repositories import (
     SqlWorkspaceRepository,
 )
@@ -35,7 +39,7 @@ from app.shared.scoping import WorkspaceScope
 
 logger = logging.getLogger(__name__)
 
-SALES_CSV_RELATIVE = "samples/sales.csv"
+SALES_CSV_RELATIVE = f"{DEFAULT_PROJECT_NAME}/{SOURCES_SUBDIRECTORY}/sales.csv"
 SALES_DATASET = "Sales"
 REVENUE_MODEL = "Revenue formula"
 RISK_MODEL = "Sales risk rules"
@@ -55,10 +59,16 @@ def seed_all(session: Session) -> None:
     workspaces = WorkspaceService(SqlWorkspaceRepository(session))
     default = workspaces.default()
     session.flush()
+    scope = WorkspaceScope(workspace_id=default.id)
+
+    #  The golden path is sample material, so it is filed in the workspace's
+    #  default project — which this creates, along with its directory. Named
+    #  generically on purpose: a project named after a piece of work is
+    #  declared by the plugin that does that work, never here.
+    project = build_services(session, settings=settings, scope=scope).projects.default()
+    session.flush()
     services = build_services(
-        session,
-        settings=settings,
-        scope=WorkspaceScope(workspace_id=default.id),
+        session, settings=settings, scope=scope.within(project.id)
     )
 
     #  Each step gets its own savepoint: one optional sample failing to load
@@ -80,7 +90,7 @@ def seed_all(session: Session) -> None:
     #  Whatever the plugins bring, set up the same way as anything else. This
     #  file does not know which applications exist, which is what makes adding
     #  one a matter of adding a plugin.
-    _step(session, "plugin fixtures", lambda: _seed_contributions(services))
+    _seed_contributions(session, services)
 
 
 def _step(session: Session, label: str, action):
@@ -385,30 +395,67 @@ def _seed_applications(services: Services, models: dict, sales_dataset) -> None:
         )
 
 
-def _seed_contributions(services: Services) -> None:
-    """Set up whatever the plugins declare, in the order they declare it."""
+def _seed_contributions(session: Session, services: Services) -> None:
+    """Set up whatever the plugins declare, in the order they declare it.
+
+    Each plugin gets a savepoint of its own. Without one, a failure anywhere
+    in the last plugin rolled back every plugin before it — one application
+    would seed completely, the next would hit a bad join, and the database
+    would come up with neither. The rule this file already states is that one
+    application failing costs that application; a shared savepoint made that
+    rule untrue.
+
+    The exception clause is `Exception` rather than `FluxError` for the same
+    reason. A plugin's failure arrives in whatever form its libraries raise —
+    the one that motivated this was Arrow refusing a column name — and a
+    seeder that only survives the platform's own error type does not survive
+    the ones that actually happen.
+    """
     from app.plugins.contrib import contributed_seeders
     from app.plugins.fixtures import FixtureLoader
 
     for contributed in contributed_seeders():
-        loader = FixtureLoader(services) if contributed.fixture is not None else None
-        if loader is not None:
-            #  Not the final pass when a code seeder follows: what it builds
-            #  cannot be referred to yet.
-            loader.load(contributed.fixture, final=contributed.seed is None)
-        if contributed.seed is not None:
-            try:
-                contributed.seed(services)
-            except FluxError as exc:
-                #  A built-in application that cannot finish setting itself up
-                #  must not take the rest of the platform's seed with it.
-                logger.warning(
-                    "plugin '%s' could not finish seeding: %s", contributed.source, exc
-                )
-        if loader is not None:
-            #  The code half builds things the declarative half wants to bundle
-            #  - the dashboards an application shows exist only once its charts
-            #  have been computed - so the fixture gets a second pass to pick
-            #  them up. It is idempotent by construction, which makes the
-            #  second pass lookups plus the parts that were missing.
-            loader.load(contributed.fixture)
+        _step(
+            session,
+            f"plugin '{contributed.source}'",
+            lambda contributed=contributed: _seed_one_plugin(
+                FixtureLoader, session, services, contributed
+            ),
+        )
+
+
+def _seed_one_plugin(loader_class, session, services: Services, contributed) -> None:
+    #  Everything this plugin creates is filed under the project it declares.
+    #  Done by rebuilding the services inside that project rather than by
+    #  passing an id through every section: filing then happens in the
+    #  repository, where it happens for everything else, and a section added
+    #  later cannot forget to do it.
+    declared = getattr(contributed.fixture, "project", None)
+    if declared:
+        existing = services.projects.repository.get_by_name(declared["name"])
+        project = existing or services.projects.create(**declared)
+        services.projects.ensure_directory(project)
+        session.flush()
+        services = build_services(
+            session,
+            settings=services.settings,
+            scope=WorkspaceScope(
+                workspace_id=services.projects.repository.scope.workspace_id,
+                user_id=services.projects.repository.scope.user_id,
+                project_id=project.id,
+            ),
+        )
+    loader = loader_class(services) if contributed.fixture is not None else None
+    if loader is not None:
+        #  Not the final pass when a code seeder follows: what it builds
+        #  cannot be referred to yet.
+        loader.load(contributed.fixture, final=contributed.seed is None)
+    if contributed.seed is not None:
+        contributed.seed(services)
+    if loader is not None:
+        #  The code half builds things the declarative half wants to bundle
+        #  - the dashboards an application shows exist only once its charts
+        #  have been computed - so the fixture gets a second pass to pick
+        #  them up. It is idempotent by construction, which makes the
+        #  second pass lookups plus the parts that were missing.
+        loader.load(contributed.fixture)

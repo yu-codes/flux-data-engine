@@ -22,6 +22,9 @@ class SourceOut(BaseModel):
     connection: dict[str, Any]
     description: str
     created_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class DatasetCreate(BaseModel):
@@ -54,6 +57,9 @@ class DatasetOut(BaseModel):
     current_version_id: str | None
     created_at: datetime
     updated_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class DatasetDetailOut(DatasetOut):

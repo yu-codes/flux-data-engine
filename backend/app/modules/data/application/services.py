@@ -52,12 +52,18 @@ class SourceService:
         repository: SourceRepository,
         readers: ReaderRegistry,
         upload_root: Path | None = None,
+        upload_directory: str = "uploads",
     ):
         self.repository = repository
         self.readers = readers
         #  Where an uploaded file lands. Injected rather than read from global
         #  settings so the application layer stays free of configuration.
         self.upload_root = upload_root
+        #  Which directory under it, relative. The composition root resolves
+        #  this from the current project, so a file uploaded while working on
+        #  one project lands beside that project's other files rather than in
+        #  a single pile shared by every case the installation ever runs.
+        self.upload_directory = upload_directory
 
     def create_from_upload(
         self,
@@ -83,7 +89,7 @@ class SourceService:
         if self.upload_root is None:
             raise ValidationError("this deployment has no upload directory configured")
 
-        target_dir = self.upload_root / "uploads"
+        target_dir = self.upload_root / self.upload_directory
         target_dir.mkdir(parents=True, exist_ok=True)
         target = target_dir / f"{new_id('up')}{suffix}"
 
@@ -167,12 +173,17 @@ class DatasetService:
         sources: SourceRepository,
         store: ObjectStore,
         readers: ReaderRegistry,
+        storage_prefix: str | None = None,
     ):
         self.datasets = datasets
         self.schemas = schemas
         self.sources = sources
         self.store = store
         self.readers = readers
+        #  A project segment in the storage key. The object store stays a
+        #  key-value store - this is a prefix, not a directory - so the same
+        #  partitioning applies whether the backend is a local folder or S3.
+        self.storage_prefix = storage_prefix
 
     # -- reads -------------------------------------------------------------
     def get(self, dataset_id: str) -> Dataset:
@@ -311,8 +322,15 @@ class DatasetService:
         description: str = "",
         lineage: dict[str, Any] | None = None,
         tags: list[str] | None = None,
+        project_id: str | None = None,
     ) -> tuple[Dataset, DatasetVersion]:
-        """Materialise an in-memory Table as a dataset (used by Results)."""
+        """Materialise an in-memory Table as a dataset (used by Results).
+
+        `project_id` is where it is filed. Passed in rather than taken from
+        the caller's scope, because the caller is often a worker standing
+        nowhere: a dataset a background run produced belongs to the project
+        the run belonged to.
+        """
         unique_name = self._unique_name(name)
         dataset = self.datasets.add(
             Dataset(
@@ -320,6 +338,7 @@ class DatasetService:
                 origin=origin,
                 description=description,
                 tags=tags or [],
+                project_id=project_id,
             )
         )
         version = self._materialise(dataset, table, lineage=lineage or {})
@@ -337,13 +356,21 @@ class DatasetService:
             return name
         return f"{name} ({new_id('v')[2:8]})"
 
+    def _prefix_for(self, dataset: Dataset) -> str:
+        """The storage-key segment this dataset's versions live under."""
+        project = dataset.project_id or self.storage_prefix
+        return f"{project}/" if project else ""
+
     def _materialise(
         self, dataset: Dataset, table: Table, *, lineage: dict[str, Any]
     ) -> DatasetVersion:
         """Write the table as Parquet and register an immutable version."""
         number = self.datasets.next_version_number(dataset.id)
         version_id = new_id("dsv")
-        key = f"datasets/{dataset.id}/v{number}/{version_id}.parquet"
+        #  Filed under the dataset's own project rather than the caller's:
+        #  a version appended by a worker belongs where the dataset does.
+        prefix = self._prefix_for(dataset)
+        key = f"datasets/{prefix}{dataset.id}/v{number}/{version_id}.parquet"
 
         #  Parquet has to be written to a real file first. Staging it in a
         #  temporary directory keeps this independent of which backend the

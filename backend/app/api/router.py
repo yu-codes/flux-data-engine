@@ -41,6 +41,7 @@ from app.modules.orchestration.api.serving_routes import (
 )
 from app.modules.platform.api.api_key_routes import router as api_key_router
 from app.modules.platform.api.auth_routes import router as auth_router
+from app.modules.platform.api.project_routes import router as project_router
 from app.modules.platform.api.workspace_routes import router as workspace_router
 from app.modules.reporting.api.routes import router as report_router
 from app.modules.results.api.routes import router as results_router
@@ -62,6 +63,9 @@ _GUARDED = (
     (evaluation_router, MODEL_GUARD),
     (jobs_router, EXECUTION_GUARD),
     (workspace_router, PLATFORM_GUARD),
+    #  Same guard as workspaces: choosing where work is filed is a platform
+    #  concern, and creating a project creates a directory on the server.
+    (project_router, PLATFORM_GUARD),
     (api_key_router, PLATFORM_GUARD),
     (execution_router, EXECUTION_GUARD),
     #  Invoking reads; submitting runs. Same module, different guard.

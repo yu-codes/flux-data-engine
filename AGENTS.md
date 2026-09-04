@@ -158,6 +158,41 @@ repository and the only way to bypass it is to bypass the repository.
 migrations). It is not a convenience; if you reach for it in request handling,
 something is wrong.
 
+## A workspace is a boundary; a project is a filing system
+
+The same file carries a second axis, and confusing the two is the mistake it
+exists to prevent:
+
+| | Workspace | Project |
+|--------|-----------|---------|
+| `_scoped(select)` | `where workspace_id = ?` | `where project_id = ? or project_id is null` |
+| `_fetch(id)` | refuses another workspace's row | **does not refuse** |
+| header | `X-Workspace`, unknown value is an error | `X-Project`, unknown value is ignored |
+
+`_fetch` deliberately does not check the project. A report cites a dataset,
+lineage walks into one, an application bundles several — refusing those would
+break real things to enforce a rule nobody asked for, and would buy no safety,
+because the workspace already is the boundary. Do not "tighten" it.
+
+`project_id IS NULL` means **shared**: the row appears under *every* project,
+not under none. That is what makes a reusable model definition usable.
+
+Filing happens on the **entity**, via `_file()`, not only on the row. The
+entity is what a service keeps and later hands to `update()`, and an update
+rewrites the row from the entity — so stamping the row alone is undone by the
+first update. Every `add()` reads
+`self.session.add(self._stamp(orm.x_to_row(self._file(entity))))`; keep that
+shape.
+
+A run is filed where its work was, not where its caller stood:
+`ExecutionService._project_for()` resolves input dataset → model → caller's
+scope → none, and the execution's project flows into its results and into the
+datasets those results become. A background worker stands nowhere, which is
+exactly why the project is passed rather than read from the scope.
+
+Applications, reports and schedules are not filed at all. Each names what it
+acts on, so a project would add a filter with nothing to filter.
+
 ## Claiming work is one statement
 
 Taking a pending Execution or Job is a conditional update, and the database
@@ -437,6 +472,14 @@ when the deployment runs in queue mode, and it seeds **into the default
 workspace** rather than into no workspace at all — a row with no workspace is
 invisible to every scoped query, which is a seeded example nobody can see.
 
+**Each plugin seeds inside a savepoint of its own, and any exception is
+contained.** Both halves of that matter and both were once missing. With one
+shared savepoint, a failure in the last plugin rolled back every plugin before
+it, and a database that should have come up with one working application came
+up with none. And catching only `FluxError` does not contain anything real: the
+failure that showed this up was Arrow refusing a column name, which is not the
+platform's error type and never will be.
+
 ---
 
 ## The typhoon algorithms are preserved code
@@ -511,6 +554,26 @@ read the extra tables from the execution context, as `plugins/join/` does.
 Align key column types before comparing them, and when a key is missing say
 which side is missing which column: "join key not found" is a message nobody
 can act on.
+
+A join also takes `columns`: which columns to bring from the right-hand table.
+It is not a convenience. A reference table usually carries a dozen columns the
+caller does not want, and two joins against two such tables collide on the same
+suffixed name — after which Arrow refuses the *whole table* with "multiple
+matches for FieldRef", several steps later, naming a column nobody asked for.
+
+**A provider that talks to something outside the process must answer without
+it.** `llm-reasoning` is the only one that does, and with no endpoint
+configured it composes the same argument from the evidence directly and marks
+it `composed`. That is not a degraded fallback for a bad day — it is the floor
+the configured model is measured against, and it is what stops the platform
+from being unable to explain its own conclusions because a network service was
+slow. Outbound calls still go through `check_url()`, and a failure costs the
+prose, never the assessment.
+
+**Evidence-grounded means checkable, not merely instructed.** Every claim cites
+a numbered finding, and a citation to a finding that does not exist is
+invention with a footnote — so the answer is checked and the composed one is
+used instead when it fails.
 
 **A new execution kind** — add it to `ExecutionKind` and declare it in the
 providers that support it.
@@ -697,6 +760,28 @@ against `Table`, and register it in `standard.py` with a Contract naming every
 parameter. One table in, one table out, one job. That contract is what the
 pipeline builder renders as a form, so a transform whose parameters are
 undescribed is a transform nobody can configure.
+
+Reshaping and time-series transforms live in `timeseries.py` rather than in
+`columnar.py`, because they answer a different question: everything in
+`columnar.py` treats a row as the unit of analysis, and everything in
+`timeseries.py` treats a *series* as one. Three properties are what make them
+compose, and a new one that breaks any of them will be wrong in a way that
+passes its own test:
+
+* **Grouping is explicit.** A trailing mean over forty assets' readings is
+  meaningless unless it restarts at each asset. Every windowed transform takes
+  `group_by`. `moving_average` does not and is left exactly as it is —
+  changing it would change what the pipelines already using it answer.
+* **Order is explicit.** Sort within the group by `order_by` first, then write
+  the answer back to the row it came from. The caller's row order is theirs.
+* **A rate has a unit.** "Per sample" stops meaning anything the moment the
+  sampling interval changes, and comparing two assets on it is the mistake the
+  unit exists to prevent. Report per hour or per day, and say which.
+
+And one rule about honesty rather than mechanics: a fit through noise must not
+be reported as a trend. `linear_trend` answers `unstable` when R² is low, and
+`_r_squared` answers `None` for a flat series rather than 1.0 — otherwise a
+stuck sensor claims the strongest trend in the fleet.
 
 **Write it column-wise.** `Transform` still accepts a row-based `fn`, and
 nothing uses it: all twenty-two are `table_fn`, and a test asserts that none of

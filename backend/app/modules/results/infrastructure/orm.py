@@ -23,6 +23,12 @@ class ResultRow(Base):
         String(64), nullable=True, index=True
     )
     created_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    #  Which project files this. A filing system rather than a boundary: a
+    #  listing filters by it, a lookup by id does not. Null means "not filed",
+    #  which shows in every project rather than in none.
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     execution_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
@@ -50,6 +56,7 @@ def to_entity(row: ResultRow) -> Result:
         artifact_uri=row.artifact_uri,
         dataset_id=row.dataset_id,
         dataset_version_id=row.dataset_version_id,
+        project_id=row.project_id,
         row_count=row.row_count,
         created_at=row.created_at,
     )
@@ -68,4 +75,5 @@ def to_row(entity: Result, row: ResultRow | None = None) -> ResultRow:
     row.dataset_version_id = entity.dataset_version_id
     row.row_count = entity.row_count
     row.created_at = entity.created_at
+    row.project_id = entity.project_id
     return row

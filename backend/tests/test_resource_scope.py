@@ -45,7 +45,7 @@ STEPS = [
 
 @pytest.fixture(scope="module")
 def dataset_id(client, api) -> str:
-    relative = "samples/test_scope_rows.csv"
+    relative = "Demo/sources/test_scope_rows.csv"
     path = Path(get_settings().data_root) / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:

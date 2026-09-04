@@ -28,6 +28,9 @@ class ResultOut(ApiModel):
     row_count: int | None
     is_materialised: bool
     created_at: datetime
+    #  Where this is filed. Null means shared: it shows under every project
+    #  rather than none, which is what the library relies on.
+    project_id: str | None = None
 
 
 class MaterialiseRequest(ApiModel):
@@ -94,4 +97,5 @@ def _out(result: Result) -> ResultOut:
         row_count=result.row_count,
         is_materialised=result.is_materialised,
         created_at=result.created_at,
+        project_id=result.project_id,
     )

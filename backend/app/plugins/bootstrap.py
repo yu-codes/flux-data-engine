@@ -15,13 +15,23 @@ logger = logging.getLogger(__name__)
 
 
 def register_builtin_plugins(registry: PluginRegistry | None = None) -> PluginRegistry:
+    from .asset_maintenance.plugin import (
+        AssetBacktestPlugin,
+        AssetDecisionPlugin,
+        AssetEvidencePlugin,
+    )
     from .curve_fit.plugin import CurveFitPlugin
+    from .data_quality.plugin import DataQualityPlugin
     from .formula.plugin import FormulaModelPlugin
     from .join.plugin import JoinPlugin
+    from .llm_reasoning.plugin import LlmReasoningPlugin
     from .monte_carlo.plugin import MonteCarloPlugin
     from .optimizer.plugin import OptimizerPlugin
+    from .projection.plugin import ThresholdProjectionPlugin
     from .python_function.plugin import PythonTransformPlugin
+    from .risk_matrix.plugin import RiskMatrixPlugin
     from .rule.plugin import RuleModelPlugin
+    from .scorecard.plugin import ScorecardPlugin
     from .sklearn.plugin import SklearnModelPlugin
     from .typhoon_analog.backtest_plugin import TyphoonBacktestPlugin
     from .typhoon_analog.plugin import TyphoonAnalogPlugin
@@ -38,11 +48,27 @@ def register_builtin_plugins(registry: PluginRegistry | None = None) -> PluginRe
         CurveFitPlugin,
         OptimizerPlugin,
         MonteCarloPlugin,
+        #  The analysis vocabulary a decision needs after the statistics are
+        #  computed: how good is it, how bad would it be, when does it reach
+        #  the line, and can the data be trusted at all. None of them names a
+        #  domain, and all four are read by more than one.
+        DataQualityPlugin,
+        ScorecardPlugin,
+        RiskMatrixPlugin,
+        ThresholdProjectionPlugin,
+        #  The only provider that talks to something outside the process, and
+        #  the only one that still answers when it cannot.
+        LlmReasoningPlugin,
         PythonTransformPlugin,
         SklearnModelPlugin,
         TyphoonAnalogPlugin,
         TyphoonPrecipAnalogPlugin,
         TyphoonBacktestPlugin,
+        #  The second built-in application: a condition assessment, its
+        #  evidence, and the backtest that scores the decision policy.
+        AssetDecisionPlugin,
+        AssetEvidencePlugin,
+        AssetBacktestPlugin,
     ):
         if target.has(plugin_cls().describe().key):
             continue

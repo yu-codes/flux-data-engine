@@ -19,7 +19,7 @@ class SqlReportRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, report: Report) -> Report:
-        self.session.add(self._stamp(orm.report_to_row(report)))
+        self.session.add(self._stamp(orm.report_to_row(self._file(report))))
         self.session.flush()
         return report
 
@@ -29,7 +29,7 @@ class SqlReportRepository(WorkspaceScoped):
 
     def get_by_name(self, name: str) -> Report | None:
         row = self.session.scalar(
-            self._scoped(select(orm.ReportRow), orm.ReportRow)
+            self._named(select(orm.ReportRow), orm.ReportRow)
             .where(orm.ReportRow.name == name)
         )
         return orm.report_to_entity(row) if row else None

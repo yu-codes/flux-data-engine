@@ -70,9 +70,13 @@ from app.modules.orchestration.infrastructure.schedule_repositories import (
 from app.modules.platform.application.api_keys import ApiKeyService
 from app.modules.platform.application.audit import AuditService
 from app.modules.platform.application.auth import AuthService
+from app.modules.platform.application.projects import ProjectService
 from app.modules.platform.application.workspaces import WorkspaceService
 from app.modules.platform.infrastructure.api_key_repositories import (
     SqlApiKeyRepository,
+)
+from app.modules.platform.infrastructure.project_repositories import (
+    SqlProjectRepository,
 )
 from app.modules.platform.infrastructure.repositories import (
     SqlAuditRepository,
@@ -160,6 +164,7 @@ class Services:
 
     auth: AuthService
     workspaces: WorkspaceService
+    projects: ProjectService
     api_keys: ApiKeyService
     audit: AuditService
     schedules: ScheduleService
@@ -185,8 +190,21 @@ def build_services(
     store = get_object_store()
     scope = scope or WorkspaceScope.unscoped()
 
+    projects = ProjectService(
+        SqlProjectRepository(session, scope),
+        data_root=settings.data_root,
+    )
+    #  Where this request's uploads land. Resolved once here rather than in
+    #  the source service, which should not have to know that projects exist
+    #  in order to put a file somewhere.
+    current = projects.find(scope.project_id)
+    upload_directory = current.uploads_path if current else "uploads"
+
     sources = SourceService(
-        SqlSourceRepository(session, scope), get_reader, upload_root=settings.data_root
+        SqlSourceRepository(session, scope),
+        get_reader,
+        upload_root=settings.data_root,
+        upload_directory=upload_directory,
     )
     datasets = DatasetService(
         datasets=SqlDatasetRepository(
@@ -200,6 +218,7 @@ def build_services(
         ),
         store=store,
         readers=get_reader,
+        storage_prefix=(current.slug if current else None),
     )
     models = ModelService(
         SqlModelRepository(session, scope), registry
@@ -306,6 +325,20 @@ def build_services(
         dashboards=dashboards,
     )
 
+    #  What a project holds, so it can refuse to be deleted out from under
+    #  forty datasets. Injected as a callable for the same reason job handlers
+    #  are: `platform` sits at the bottom of the stack and must not learn what
+    #  a dataset is.
+    projects.usage = _holdings(
+        sources=sources,
+        datasets=datasets,
+        pipelines=pipelines,
+        models=models,
+        visualizations=visualizations,
+        dashboards=dashboards,
+        experiments=experiments,
+    )
+
     return Services(
         session=session,
         settings=settings,
@@ -325,6 +358,7 @@ def build_services(
         applications=applications,
         auth=AuthService(SqlUserRepository(session, scope), settings),
         workspaces=WorkspaceService(SqlWorkspaceRepository(session)),
+        projects=projects,
         api_keys=ApiKeyService(SqlApiKeyRepository(session)),
         audit=AuditService(
             SqlAuditRepository(session, scope), enabled=settings.audit_enabled
@@ -337,6 +371,28 @@ def build_services(
         ),
         jobs=job_service,
     )
+
+
+def _holdings(**services):
+    """A counter of what a project holds, keyed by what a person would call it.
+
+    Counted through the ordinary listing services, which are already scoped to
+    the workspace — so this cannot report resources the caller may not see.
+    """
+
+    def count(project_id: str) -> dict[str, int]:
+        held: dict[str, int] = {}
+        for label, service in services.items():
+            try:
+                rows = service.list()
+            except Exception:  # a listing that fails must not block a delete
+                continue
+            held[label] = sum(
+                1 for row in rows if getattr(row, "project_id", None) == project_id
+            )
+        return held
+
+    return count
 
 
 def _ran_pipeline(run) -> dict:

@@ -19,7 +19,7 @@ class SqlResultRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, result: Result) -> Result:
-        self.session.add(self._stamp(orm.to_row(result)))
+        self.session.add(self._stamp(orm.to_row(self._file(result))))
         self.session.flush()
         return result
 

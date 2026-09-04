@@ -14,7 +14,12 @@ from pathlib import Path
 
 from app.core.config import get_settings
 
-SUBDIRECTORY = ("typhoon", "preprocessed")
+#  The project this application's data belongs to. Declared here as well as in
+#  the fixture because a plugin ships files at a path it has to know before any
+#  database exists — and because a name typed twice is a name that drifts, the
+#  fixture imports it from here rather than repeating it.
+PROJECT = "HydroAnalog"
+SUBDIRECTORY = (PROJECT, "sources", "preprocessed")
 
 
 def typhoon_data_dir() -> Path:

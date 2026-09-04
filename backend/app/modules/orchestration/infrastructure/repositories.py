@@ -23,7 +23,7 @@ class SqlPipelineRepository(WorkspaceScoped):
 
     # -- pipelines ---------------------------------------------------------
     def add(self, pipeline: Pipeline) -> Pipeline:
-        self.session.add(self._stamp(orm.pipeline_to_row(pipeline)))
+        self.session.add(self._stamp(orm.pipeline_to_row(self._file(pipeline))))
         self.session.flush()
         return pipeline
 
@@ -33,7 +33,7 @@ class SqlPipelineRepository(WorkspaceScoped):
 
     def get_by_name(self, name: str) -> Pipeline | None:
         row = self.session.scalar(
-            self._scoped(select(orm.PipelineRow), orm.PipelineRow)
+            self._named(select(orm.PipelineRow), orm.PipelineRow)
             .where(orm.PipelineRow.name == name)
         )
         return orm.pipeline_to_entity(row) if row else None
@@ -59,7 +59,7 @@ class SqlPipelineRepository(WorkspaceScoped):
 
     # -- runs --------------------------------------------------------------
     def add_run(self, run: PipelineRun) -> PipelineRun:
-        self.session.add(self._stamp(orm.pipeline_run_to_row(run)))
+        self.session.add(self._stamp(orm.pipeline_run_to_row(self._file(run))))
         self.session.flush()
         return run
 

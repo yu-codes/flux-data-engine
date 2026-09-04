@@ -36,6 +36,7 @@ from app.modules.model.domain.registry import PluginRegistry
 from app.modules.results.application.services import ResultService
 from app.shared.errors import (
     ExecutionError,
+    FluxError,
     NotFoundError,
     UnsupportedError,
     ValidationError,
@@ -258,6 +259,7 @@ class ExecutionService:
         execution = self.repository.add(
             Execution(
                 target_id=None if inline else model.id,
+                project_id=self._project_for(model, resolved_dataset_version),
                 model_version_id=version_id,
                 definition_snapshot=_snapshot_of(model) if inline else {},
                 kind=execution_kind,
@@ -647,6 +649,7 @@ class ExecutionService:
         execution.logs.extend(outcome.logs)
         result = self.results.persist(
             execution_id=execution.id,
+            project_id=execution.project_id,
             payload=outcome.payload,
             lineage=execution.lineage,
         )
@@ -763,6 +766,7 @@ class ExecutionService:
 
         result = self.results.persist(
             execution_id=execution.id,
+            project_id=execution.project_id,
             payload=outcome.payload,
             metrics=outcome.metrics,
             dataset_name_hint=f"{model.name} result",
@@ -808,6 +812,7 @@ class ExecutionService:
         if outcome.payload is not None:
             result = self.results.persist(
                 execution_id=execution.id,
+                project_id=execution.project_id,
                 payload=outcome.payload,
                 metrics=outcome.metrics,
                 dataset_name_hint=f"{model.name} training report",
@@ -820,6 +825,28 @@ class ExecutionService:
         return execution
 
     # -- helpers -----------------------------------------------------------
+    def _project_for(self, model, dataset_version_id: str | None) -> str | None:
+        """Which project this run belongs to.
+
+        Asked in order, and the order is the point: the data being read is a
+        better answer than the model reading it, because a shared formula run
+        against one project's dataset belongs to that project rather than to
+        everywhere. The caller's current project is the last resort, and a run
+        the scheduler made while standing nowhere is left unfiled — which shows
+        it in every project rather than hiding it in one nobody is looking at.
+        """
+        if dataset_version_id:
+            try:
+                version = self.datasets.get_version(dataset_version_id)
+                dataset = self.datasets.get(version.dataset_id)
+                if dataset.project_id:
+                    return dataset.project_id
+            except FluxError:
+                pass
+        if getattr(model, "project_id", None):
+            return model.project_id
+        return getattr(getattr(self.repository, "scope", None), "project_id", None)
+
     @staticmethod
     def _resolve_kind(
         requested: str | None, supported: tuple[ExecutionKind, ...]

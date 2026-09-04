@@ -37,6 +37,16 @@ class Fixture:
 
     #  Named so a log line can say which plugin asked for what.
     source: str
+    #  The project everything below is filed under: `{"name": ..., ...}`.
+    #  Declared by the plugin rather than by the core, because a project is
+    #  named after a piece of work and the core of a general platform must not
+    #  know that any particular piece of work exists.
+    #
+    #  Everything in the sections below is created *inside* it — not by each
+    #  section passing an id around, but by the seeder building its services
+    #  scoped to the project first. Filing then happens where filing always
+    #  happens, in the repository, and no section has to remember.
+    project: dict[str, Any] | None = None
     sources: list[dict[str, Any]] = field(default_factory=list)
     datasets: list[dict[str, Any]] = field(default_factory=list)
     models: list[dict[str, Any]] = field(default_factory=list)

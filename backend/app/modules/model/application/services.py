@@ -10,7 +10,7 @@ from typing import Any
 
 from app.shared.contracts import Contract, ValidationResult
 from app.shared.errors import ConflictError, NotFoundError, PluginError, ValidationError
-from app.shared.ids import slugify
+from app.shared.ids import slugify, utcnow
 
 from ..domain.entities import (
     ModelDefinition,
@@ -177,6 +177,24 @@ class ModelService:
             raise ValidationError(
                 "updated model definition is invalid", details=validation.to_dict()
             )
+        return self.repository.update(model)
+
+    def file_under(self, model_id: str, project_id: str | None) -> ModelDefinition:
+        """Move a model definition between projects, or share it across all.
+
+        Separate from `update` because `None` means two different things in
+        the two calls: in `update` it means "leave this alone", and here it
+        means "belongs to no project", which is how a definition is shared —
+        an unfiled model is listed under every project rather than under none.
+
+        A definition is the one thing on the platform worth reusing across
+        pieces of work: a scorecard, a threshold rule or a curve fit is not
+        about the fleet or the typhoons, it is about arithmetic. Runs, results
+        and the datasets they produce stay where the work happened.
+        """
+        model = self.get(model_id)
+        model.project_id = project_id
+        model.updated_at = utcnow()
         return self.repository.update(model)
 
     def publish_version(

@@ -433,6 +433,32 @@ EXERCISE: dict[str, dict[str, Any]] = {
     "percent_of_total": {"column": "wind"},
     "group_aggregate": {"group_by": "landfall", "column": "wind"},
     "summarise": {"group_by": ["landfall"], "measures": {"wind": "mean"}},
+    #  Reshaping and time series. The fixture is not a time series, which is
+    #  the point of exercising them here: they have to survive a table whose
+    #  ordering column is a year, whose groups have two rows, and whose values
+    #  include a null.
+    "pivot_wider": {"keys": ["name"], "name_from": "landfall", "value_from": "wind"},
+    "unpivot_longer": {"keys": ["name"], "columns": ["wind", "year"]},
+    "resample_time": {
+        "timestamp": "formed",
+        "period": "year",
+        "group_by": ["landfall"],
+        "measures": {"wind": "mean"},
+    },
+    "rolling_stats": {
+        "column": "wind",
+        "window": 2,
+        "group_by": ["landfall"],
+        "order_by": "year",
+    },
+    "rate_of_change": {"column": "wind", "group_by": ["landfall"], "order_by": "formed"},
+    "lag_column": {"column": "wind", "group_by": ["landfall"], "order_by": "year"},
+    "linear_trend": {"column": "wind", "group_by": ["landfall"], "order_by": "formed"},
+    "correlation": {
+        "columns": ["wind", "year"],
+        "group_by": ["landfall"],
+        "min_periods": 2,
+    },
 }
 
 

@@ -30,6 +30,7 @@ def _source_out(source: Source) -> SourceOut:
         connection=source.redacted_connection(),
         description=source.description,
         created_at=source.created_at,
+           project_id=source.project_id,
     )
 
 
@@ -233,6 +234,7 @@ def _dataset_dict(dataset) -> dict:
         "current_version_id": dataset.current_version_id,
         "created_at": dataset.created_at,
         "updated_at": dataset.updated_at,
+        "project_id": dataset.project_id,
     }
 
 

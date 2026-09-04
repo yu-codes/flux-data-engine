@@ -34,10 +34,12 @@ def contributed_routers() -> list[ContributedRouter]:
     Imported lazily so the core module graph stays free of plugin imports.
     """
     from app.api.security import BUILTIN_APP_GUARD
+    from app.plugins.asset_maintenance.routes import router as maintenance_router
     from app.plugins.typhoon_analog.routes import router as typhoon_router
 
     return [
         ContributedRouter(typhoon_router, BUILTIN_APP_GUARD, "typhoon_analog"),
+        ContributedRouter(maintenance_router, BUILTIN_APP_GUARD, "asset_maintenance"),
     ]
 
 
@@ -63,6 +65,10 @@ def contributed_seeders() -> list[ContributedSeeder]:
     built-in application means adding a plugin and a line here - never editing
     anything under `app/core/`.
     """
+    from app.plugins.asset_maintenance.seed import seed_maintenance_example
+    from app.plugins.asset_maintenance.seed.resources import (
+        fixture as maintenance_fixture,
+    )
     from app.plugins.typhoon_analog.seed import seed_typhoon_example
     from app.plugins.typhoon_analog.seed.resources import fixture as typhoon_fixture
 
@@ -71,5 +77,10 @@ def contributed_seeders() -> list[ContributedSeeder]:
             source="typhoon_analog",
             fixture=typhoon_fixture(),
             seed=seed_typhoon_example,
+        ),
+        ContributedSeeder(
+            source="asset_maintenance",
+            fixture=maintenance_fixture(),
+            seed=seed_maintenance_example,
         ),
     ]

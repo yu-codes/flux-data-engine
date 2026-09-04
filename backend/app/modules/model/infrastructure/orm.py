@@ -38,6 +38,12 @@ class ModelRow(Base):
         String(64), nullable=True, index=True
     )
     created_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    #  Which project files this. A filing system rather than a boundary: a
+    #  listing filters by it, a lookup by id does not. Null means "not filed",
+    #  which shows in every project rather than in none.
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
@@ -103,6 +109,7 @@ def model_to_entity(row: ModelRow) -> ModelDefinition:
         created_at=row.created_at,
         created_by=row.created_by,
         workspace_id=row.workspace_id,
+        project_id=row.project_id,
         updated_at=row.updated_at,
     )
 
@@ -129,6 +136,7 @@ def model_to_row(entity: ModelDefinition, row: ModelRow | None = None) -> ModelR
     #  Never cleared on update: the creator does not change.
     if entity.created_by:
         row.created_by = entity.created_by
+    row.project_id = entity.project_id
     return row
 
 

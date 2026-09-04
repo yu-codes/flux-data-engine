@@ -96,15 +96,22 @@ const routes: RouteRecordRaw[] = [
 
   // -- results -------------------------------------------------------------
   { path: '/results', name: 'results', component: () => import('@/pages/results/ResultsPage.vue'), meta: { title: 'Results' } },
-  { path: '/reports', name: 'reports', component: () => import('@/pages/results/ReportsPage.vue'), meta: { title: 'Reports' } },
 
   // -- applications --------------------------------------------------------
+  //  Reports and Schedules live here rather than beside Results and the
+  //  system pages. Both are things the platform *delivers* on a standing
+  //  basis rather than things you build inside one piece of work, and
+  //  neither is filed by project: a report cites resources by id and a
+  //  schedule names a runnable, so both are already as specific as they
+  //  need to be.
   {
     path: '/applications',
     name: 'applications',
     component: () => import('@/pages/applications/ApplicationsPage.vue'),
     meta: { title: 'Applications' },
   },
+  { path: '/reports', name: 'reports', component: () => import('@/pages/applications/ReportsPage.vue'), meta: { title: 'Reports' } },
+  { path: '/schedules', name: 'schedules', component: () => import('@/pages/applications/SchedulesPage.vue'), meta: { title: 'Schedules' } },
   {
     path: '/applications/typhoon',
     name: 'typhoon',
@@ -112,7 +119,13 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Typhoon analog forecast' },
   },
   {
-    //  A composed application's own page. Declared after the built-in route
+    path: '/applications/asset-maintenance',
+    name: 'asset-maintenance',
+    component: () => import('@/pages/applications/AssetMaintenancePage.vue'),
+    meta: { title: '設備預防性維護分析' },
+  },
+  {
+    //  A composed application's own page. Declared after the built-in routes
     //  for readability only - the router ranks a static segment above a
     //  dynamic one, so `/applications/typhoon` wins either way.
     path: '/applications/:id',
@@ -122,7 +135,12 @@ const routes: RouteRecordRaw[] = [
   },
 
   // -- system --------------------------------------------------------------
-  { path: '/schedules', name: 'schedules', component: () => import('@/pages/system/SchedulesPage.vue'), meta: { title: 'Schedules' } },
+  {
+    path: '/projects',
+    name: 'projects',
+    component: () => import('@/pages/system/ProjectsPage.vue'),
+    meta: { title: 'Projects' },
+  },
   {
     path: '/users',
     name: 'users',

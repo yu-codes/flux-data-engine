@@ -52,7 +52,7 @@ def _dataset_from(client, api, name: str, relative: str) -> dict:
 
 @pytest.fixture(scope="module")
 def dataset(client, api) -> dict:
-    relative = _write_csv("samples/test_readings.csv", READINGS)
+    relative = _write_csv("Demo/sources/test_readings.csv", READINGS)
     return _dataset_from(client, api, "Experiment readings", relative)
 
 
@@ -157,7 +157,7 @@ def test_a_well_formed_experiment_checks_out_runnable(client, api, dataset, mode
 def test_the_check_names_the_columns_a_provider_cannot_find(client, api, models):
     """curve-fit reads columns named in its own configuration, so it can say so."""
     relative = _write_csv(
-        "samples/test_unrelated.csv", [{"city": "Taipei", "population": 2600000}]
+        "Demo/sources/test_unrelated.csv", [{"city": "Taipei", "population": 2600000}]
     )
     other = _dataset_from(client, api, "Unrelated cities", relative)
 

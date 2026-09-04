@@ -20,7 +20,7 @@ class SqlScheduleRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, schedule: Schedule) -> Schedule:
-        self.session.add(self._stamp(orm.schedule_to_row(schedule)))
+        self.session.add(self._stamp(orm.schedule_to_row(self._file(schedule))))
         self.session.flush()
         return schedule
 
@@ -30,7 +30,7 @@ class SqlScheduleRepository(WorkspaceScoped):
 
     def get_by_name(self, name: str) -> Schedule | None:
         row = self.session.scalar(
-            self._scoped(select(orm.ScheduleRow), orm.ScheduleRow)
+            self._named(select(orm.ScheduleRow), orm.ScheduleRow)
             .where(orm.ScheduleRow.name == name)
         )
         return orm.schedule_to_entity(row) if row else None

@@ -98,6 +98,7 @@ class ResultService:
         dataset_name_hint: str = "result",
         lineage: dict[str, Any] | None = None,
         materialise_dataset: bool | None = None,
+        project_id: str | None = None,
     ) -> Result:
         """Turn a plugin's payload into a stored, first-class Result.
 
@@ -106,8 +107,14 @@ class ResultService:
         the table is still kept, as a checkpoint the next step reads, but it
         does not become a Dataset with a name and a place in the catalogue.
         """
+        #  Filed where the execution was, not where the caller is standing.
+        #  A worker holds no project, so without this every dataset a
+        #  background run materialised would come out unfiled. Passed in
+        #  rather than looked up: `results` sits below `execution` in the
+        #  dependency stack, and that direction stays one-way.
         result = Result(
             execution_id=execution_id,
+            project_id=project_id,
             kind=payload.kind,
             summary=payload.summary or {},
             metrics={**(payload.metrics or {}), **(metrics or {})},
@@ -127,6 +134,7 @@ class ResultService:
                     origin=DatasetOrigin.EXECUTION,
                     description=f"materialised from execution {execution_id}",
                     lineage={"execution_id": execution_id, **(lineage or {})},
+                    project_id=project_id,
                 )
                 result.dataset_id = dataset.id
                 result.dataset_version_id = version.id

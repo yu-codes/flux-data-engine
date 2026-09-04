@@ -20,7 +20,7 @@ class SqlModelRepository(WorkspaceScoped):
         self.scope = scope or WorkspaceScope.unscoped()
 
     def add(self, model: ModelDefinition) -> ModelDefinition:
-        self.session.add(self._stamp(orm.model_to_row(model)))
+        self.session.add(self._stamp(orm.model_to_row(self._file(model))))
         self.session.flush()
         return model
 
@@ -30,14 +30,14 @@ class SqlModelRepository(WorkspaceScoped):
 
     def get_by_slug(self, slug: str) -> ModelDefinition | None:
         row = self.session.scalar(
-            self._scoped(select(orm.ModelRow), orm.ModelRow)
+            self._named(select(orm.ModelRow), orm.ModelRow)
             .where(orm.ModelRow.slug == slug)
         )
         return orm.model_to_entity(row) if row else None
 
     def get_by_name(self, name: str) -> ModelDefinition | None:
         row = self.session.scalar(
-            self._scoped(select(orm.ModelRow), orm.ModelRow)
+            self._named(select(orm.ModelRow), orm.ModelRow)
             .where(orm.ModelRow.name == name)
         )
         return orm.model_to_entity(row) if row else None
@@ -83,7 +83,7 @@ class SqlModelRepository(WorkspaceScoped):
 
     # -- versions ----------------------------------------------------------
     def add_version(self, version: ModelVersion) -> ModelVersion:
-        self.session.add(self._stamp(orm.version_to_row(version)))
+        self.session.add(self._stamp(orm.version_to_row(self._file(version))))
         self.session.flush()
         return version
 

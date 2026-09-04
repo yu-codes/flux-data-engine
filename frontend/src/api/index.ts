@@ -21,6 +21,10 @@ import type {
   InvokeAnswer,
   Leaderboard,
   LineageGraphData,
+  MaintenanceAssetDetail,
+  MaintenanceCatalogue,
+  MaintenanceFleet,
+  MaintenanceSeries,
   ModelDefinition,
   ModelVersion,
   Overview,
@@ -28,6 +32,8 @@ import type {
   PipelineRun,
   PlatformInfo,
   Preview,
+  Project,
+  ProjectHoldings,
   ProviderDescriptor,
   RenderedDashboard,
   RenderedReport,
@@ -90,6 +96,27 @@ export const workspaces = {
     api.post<WorkspaceMember>(`/workspaces/${id}/members`, body),
   removeMember: (id: string, userId: string) =>
     api.del(`/workspaces/${id}/members/${userId}`),
+}
+
+// -- projects --------------------------------------------------------------
+/**
+ * The filing system inside a workspace.
+ *
+ * Which project is current is sent as a header by `client.ts`, so none of
+ * these calls takes one: the list you get back is already the current
+ * workspace's, and every other endpoint already filters by the current
+ * project.
+ */
+export const projects = {
+  list: () => api.get<Project[]>('/projects'),
+  get: (id: string) => api.get<Project>(`/projects/${id}`),
+  create: (body: { name: string; description?: string; directory?: string }) =>
+    api.post<Project>('/projects', body),
+  update: (id: string, body: { name?: string; description?: string; directory?: string }) =>
+    api.patch<Project>(`/projects/${id}`, body),
+  remove: (id: string) => api.del(`/projects/${id}`),
+  //  A project holding anything cannot be deleted, so ask before offering to.
+  holdings: (id: string) => api.get<ProjectHoldings>(`/projects/${id}/holdings`),
 }
 
 export const auth = {
@@ -253,6 +280,13 @@ export const models = {
   all: () => api.get<ModelDefinition[]>('/models'),
   setStatus: (id: string, status: 'active' | 'deprecated') =>
     api.post<ModelDefinition>(`/models/${id}/status`, { status }),
+  /**
+   * File a definition under a project, or share it across all of them with
+   * `null`. Its own endpoint rather than a field on `update`, where null
+   * would mean "leave it alone".
+   */
+  fileUnder: (id: string, projectId: string | null) =>
+    api.post<ModelDefinition>(`/models/${id}/project`, { project_id: projectId }),
   get: (id: string) => api.get<ModelDefinition>(`/models/${id}`),
   create: (body: Record<string, unknown>) => api.post<ModelDefinition>('/models', body),
   update: (id: string, body: Record<string, unknown>) => api.patch<ModelDefinition>(`/models/${id}`, body),
@@ -365,4 +399,63 @@ export const typhoon = {
   predict: (body: Record<string, unknown>) => api.post<TyphoonPrediction>('/applications/typhoon/predict', body),
   precipitation: (body: Record<string, unknown>) =>
     api.post<Record<string, unknown>>('/applications/typhoon/precipitation', body),
+}
+
+// -- the built-in asset-maintenance application ----------------------------
+/**
+ * The fleet endpoints shape one assessment three ways — a list, one asset, one
+ * measurement over time — because the browser should not be asked to assemble
+ * them from twenty thousand daily rows.
+ */
+export const assetMaintenance = {
+  catalogue: () =>
+    api.get<MaintenanceCatalogue>('/applications/asset-maintenance/catalogue'),
+  fleet: (params: {
+    policy?: string
+    as_of?: string
+    site?: string
+    criticality?: string
+    status?: string
+    required_only?: boolean
+    search?: string
+  } = {}) => {
+    const query = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '' && value !== false) {
+        query.set(key, String(value))
+      }
+    })
+    const suffix = query.toString()
+    return api.get<MaintenanceFleet>(
+      `/applications/asset-maintenance/fleet${suffix ? `?${suffix}` : ''}`,
+    )
+  },
+  asset: (assetId: string, params: { policy?: string; as_of?: string } = {}) => {
+    const query = new URLSearchParams()
+    if (params.policy) query.set('policy', params.policy)
+    if (params.as_of) query.set('as_of', params.as_of)
+    const suffix = query.toString()
+    return api.get<MaintenanceAssetDetail>(
+      `/applications/asset-maintenance/assets/${encodeURIComponent(assetId)}${
+        suffix ? `?${suffix}` : ''
+      }`,
+    )
+  },
+  series: (assetId: string, params: { parameter?: string; days?: number } = {}) => {
+    const query = new URLSearchParams()
+    if (params.parameter) query.set('parameter', params.parameter)
+    query.set('days', String(params.days ?? 90))
+    return api.get<MaintenanceSeries>(
+      `/applications/asset-maintenance/assets/${encodeURIComponent(assetId)}/series?${query}`,
+    )
+  },
+  assess: (body: { policy?: string; as_of?: string | null; asset_id?: string | null }) =>
+    api.post<{
+      execution_id: string
+      status: string
+      metrics: Record<string, unknown>
+      result_id: string | null
+      summary: Record<string, unknown>
+      rows: unknown
+    }>('/applications/asset-maintenance/assess', body),
 }

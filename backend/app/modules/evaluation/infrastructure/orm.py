@@ -23,6 +23,12 @@ class ExperimentRow(Base):
         String(64), nullable=True, index=True
     )
     created_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    #  Which project files this. A filing system rather than a boundary: a
+    #  listing filters by it, a lookup by id does not. Null means "not filed",
+    #  which shows in every project rather than in none.
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
@@ -47,6 +53,12 @@ class EvaluationRow(Base):
         String(64), nullable=True, index=True
     )
     created_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    #  Which project files this. A filing system rather than a boundary: a
+    #  listing filters by it, a lookup by id does not. Null means "not filed",
+    #  which shows in every project rather than in none.
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     execution_id: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -78,6 +90,7 @@ def experiment_to_entity(row: ExperimentRow) -> Experiment:
         created_at=row.created_at,
         created_by=row.created_by,
         workspace_id=row.workspace_id,
+        project_id=row.project_id,
         updated_at=row.updated_at,
     )
 
@@ -99,6 +112,7 @@ def experiment_to_row(
     #  Never cleared on update: the creator does not change.
     if entity.created_by:
         row.created_by = entity.created_by
+    row.project_id = entity.project_id
     return row
 
 def evaluation_to_entity(row: EvaluationRow) -> Evaluation:
@@ -107,6 +121,7 @@ def evaluation_to_entity(row: EvaluationRow) -> Evaluation:
         execution_id=row.execution_id,
         model_id=row.model_id,
         experiment_id=row.experiment_id,
+        project_id=row.project_id,
         metrics=row.metrics or {},
         target=row.target or {},
         passed=row.passed,
@@ -118,6 +133,7 @@ def evaluation_to_row(entity: Evaluation) -> EvaluationRow:
     return EvaluationRow(
         id=entity.id,
         execution_id=entity.execution_id,
+        project_id=entity.project_id,
         model_id=entity.model_id,
         experiment_id=entity.experiment_id,
         metrics=entity.metrics,

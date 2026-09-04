@@ -35,6 +35,10 @@ class Result:
     artifact_uri: str | None = None
     dataset_id: str | None = None
     dataset_version_id: str | None = None
+    #  Which project this is filed under. Null means it is not filed and
+    #  shows in every project — a deliberately shared model, or a run the
+    #  scheduler made without standing anywhere.
+    project_id: str | None = None
     row_count: int | None = None
     id: str = field(default_factory=lambda: new_id("res"))
     created_at: datetime = field(default_factory=utcnow)

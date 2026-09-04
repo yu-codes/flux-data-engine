@@ -100,6 +100,32 @@
               label="unpublished"
             />
           </q-item-section>
+          <q-item-section side>
+            <!--
+              Where the definition is filed, and the one gesture that changes
+              it. A definition is the only thing here worth reusing across
+              projects — arithmetic is not about the fleet or the typhoons —
+              so the library keeps its reach while the lists stay legible.
+            -->
+            <q-btn
+              flat
+              dense
+              no-caps
+              size="sm"
+              :icon="model.project_id ? 'folder_special' : 'public'"
+              :label="model.project_id ? 'this project' : 'shared'"
+              class="model__filing"
+              @click.prevent.stop="toggleFiling(model)"
+            >
+              <q-tooltip>
+                {{
+                  model.project_id
+                    ? 'Filed under this project. Click to share it across all of them.'
+                    : 'Shared across every project. Click to file it under this one.'
+                }}
+              </q-tooltip>
+            </q-btn>
+          </q-item-section>
         </q-item>
       </q-list>
       <EmptyState
@@ -243,6 +269,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { models as modelsApi } from '@/api'
+import { getProject } from '@/api/client'
 import EmptyState from '@/components/EmptyState.vue'
 import FactList from '@/components/FactList.vue'
 import SearchField from '@/components/SearchField.vue'
@@ -421,6 +448,26 @@ async function create() {
  * requested, so the page recorded no error and rendered its empty state — the
  * one outcome that reads as "there is nothing here" rather than "this broke".
  */
+/**
+ * Share this definition across every project, or pull it into the current one.
+ *
+ * Only definitions move. The runs, results and datasets a model produced stay
+ * filed where the work happened, because that is what they are evidence of.
+ */
+async function toggleFiling(model: ModelDefinition) {
+  const project = getProject()
+  if (!model.project_id && !project) {
+    $q.notify({ type: 'warning', message: 'Choose a project first' })
+    return
+  }
+  try {
+    await modelsApi.fileUnder(model.id, model.project_id ? null : project)
+    await loadModels()
+  } catch (error) {
+    $q.notify({ type: 'negative', message: (error as Error).message })
+  }
+}
+
 async function loadAll() {
   loading.value = true
   loadError.value = null
@@ -441,6 +488,15 @@ onMounted(loadAll)
 </script>
 
 <style scoped>
+/*  Filing is context, not the row's purpose: quiet until hovered. */
+.model__filing {
+  opacity: var(--fx-ink-muted);
+}
+
+.model__filing:hover {
+  opacity: 1;
+}
+
 .providers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

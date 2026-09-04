@@ -53,7 +53,7 @@ def test_the_advertised_list_matches_the_enum(client, api):
 def stored_objects() -> dict[str, str]:
     """Put one object of each shape into the platform's own store."""
     store = store_from_settings(get_settings())
-    scratch = Path(get_settings().data_root) / "samples"
+    scratch = Path(get_settings().data_root) / "Demo" / "sources"
     scratch.mkdir(parents=True, exist_ok=True)
 
     csv_path = scratch / "object_source.csv"
